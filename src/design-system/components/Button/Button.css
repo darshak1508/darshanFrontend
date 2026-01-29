@@ -1,0 +1,281 @@
+/**
+ * Button Styles
+ * 
+ * Modern, accessible button styles.
+ * No Material UI dependencies.
+ */
+
+.btn {
+  /* Base styles */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  position: relative;
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIZE VARIANTS
+   ═══════════════════════════════════════════════════════════════ */
+.btn--sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+}
+
+.btn--md {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.btn--lg {
+  height: 48px;
+  padding: 0 24px;
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VARIANT STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Primary - Brand color, high emphasis */
+.btn--primary {
+  background-color: var(--color-brand-600);
+  color: white;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--color-brand-700);
+}
+
+.btn--primary:active:not(:disabled) {
+  background-color: var(--color-brand-800);
+}
+
+/* Secondary - Subtle background, medium emphasis */
+.btn--secondary {
+  background-color: var(--color-neutral-100);
+  color: var(--text-primary);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-neutral-200);
+}
+
+.btn--secondary:active:not(:disabled) {
+  background-color: var(--color-neutral-300);
+}
+
+[data-theme="dark"] .btn--secondary {
+  background-color: var(--color-neutral-800);
+  color: var(--color-neutral-100);
+}
+
+[data-theme="dark"] .btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-neutral-700);
+}
+
+/* Ghost - Transparent background, low emphasis */
+.btn--ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background-color: var(--color-neutral-100);
+  color: var(--text-primary);
+}
+
+.btn--ghost:active:not(:disabled) {
+  background-color: var(--color-neutral-200);
+}
+
+[data-theme="dark"] .btn--ghost:hover:not(:disabled) {
+  background-color: var(--color-neutral-800);
+  color: var(--color-neutral-100);
+}
+
+/* Danger - Destructive actions */
+.btn--danger {
+  background-color: var(--color-error-600);
+  color: white;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background-color: var(--color-error-700);
+}
+
+.btn--danger:active:not(:disabled) {
+  background-color: var(--color-error-800);
+}
+
+/* Outline - Border only */
+.btn--outline {
+  background-color: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+.btn--outline:hover:not(:disabled) {
+  background-color: var(--color-neutral-50);
+  border-color: var(--border-strong);
+}
+
+.btn--outline:active:not(:disabled) {
+  background-color: var(--color-neutral-100);
+}
+
+[data-theme="dark"] .btn--outline {
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-200);
+}
+
+[data-theme="dark"] .btn--outline:hover:not(:disabled) {
+  background-color: var(--color-neutral-800);
+  border-color: var(--color-neutral-600);
+}
+
+/* Link - Text-style button */
+.btn--link {
+  background-color: transparent;
+  color: var(--color-brand-600);
+  padding: 0;
+  height: auto;
+}
+
+.btn--link:hover:not(:disabled) {
+  color: var(--color-brand-700);
+  text-decoration: underline;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE MODIFIERS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Full width */
+.btn--full-width {
+  width: 100%;
+}
+
+/* Disabled */
+.btn--disabled,
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading */
+.btn--loading {
+  cursor: wait;
+  color: transparent;
+}
+
+.btn--loading .btn__content {
+  opacity: 0;
+}
+
+.btn--loading .btn__icon {
+  opacity: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INTERNAL ELEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn__content {
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn__icon svg {
+  width: 1em;
+  height: 1em;
+}
+
+.btn--sm .btn__icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn--md .btn__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn--lg .btn__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Loading spinner */
+.btn__spinner {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn__spinner svg {
+  width: 18px;
+  height: 18px;
+  animation: btn-spin 0.8s linear infinite;
+  color: currentColor;
+}
+
+.btn--primary .btn__spinner svg,
+.btn--danger .btn__spinner svg {
+  color: white;
+}
+
+@keyframes btn-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ICON-ONLY BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+.btn--icon-only {
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+.btn--icon-only.btn--sm {
+  width: 32px;
+  height: 32px;
+}
+
+.btn--icon-only.btn--md {
+  width: 40px;
+  height: 40px;
+}
+
+.btn--icon-only.btn--lg {
+  width: 48px;
+  height: 48px;
+}
