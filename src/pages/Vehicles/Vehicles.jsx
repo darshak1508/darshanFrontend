@@ -79,6 +79,8 @@ function Vehicles() {
     ownerName: '',
     firmId: '',
   });
+  const [formErrors, setFormErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   // Fetch vehicles
   const fetchVehicles = async () => {
@@ -142,16 +144,43 @@ function Vehicles() {
       setEditingVehicle(null);
       setFormData({ vehicleNo: '', driverNumber: '', ownerName: '', firmId: '' });
     }
+    setFormErrors({});
     setIsModalOpen(true);
+  };
+
+  // Validate form
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.firmId) {
+      errors.firmId = 'Please select a firm';
+    }
+    
+    if (!formData.vehicleNo || formData.vehicleNo.trim() === '') {
+      errors.vehicleNo = 'Vehicle number is required';
+    }
+    
+    if (!formData.ownerName || formData.ownerName.trim() === '') {
+      errors.ownerName = 'Owner name is required';
+    }
+    
+    if (!formData.driverNumber || formData.driverNumber.trim() === '') {
+      errors.driverNumber = 'Driver phone is required';
+    } else if (!/^\d{10}$/.test(formData.driverNumber.trim())) {
+      errors.driverNumber = 'Please enter a valid 10-digit phone number';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // Handle save
   const handleSave = async () => {
-    if (!formData.vehicleNo || !formData.firmId || !formData.driverNumber || !formData.ownerName) {
-      alert('Please fill in all required fields');
+    if (!validateForm()) {
       return;
     }
 
+    setIsSaving(true);
     try {
       const endpoint = editingVehicle
         ? `/vehicle/${editingVehicle.id}`
@@ -161,15 +190,18 @@ function Vehicles() {
         method: editingVehicle ? 'PUT' : 'POST',
         body: JSON.stringify({
           FirmId: parseInt(formData.firmId),
-          VehicleNo: formData.vehicleNo,
-          DriverNumber: formData.driverNumber,
-          OwnerName: formData.ownerName,
+          VehicleNo: formData.vehicleNo.trim(),
+          DriverNumber: formData.driverNumber.trim(),
+          OwnerName: formData.ownerName.trim(),
         }),
       });
 
       if (response.ok) {
         setIsModalOpen(false);
         fetchVehicles();
+        // Reset form
+        setFormData({ vehicleNo: '', driverNumber: '', ownerName: '', firmId: '' });
+        setFormErrors({});
       } else {
         const error = await response.json();
         alert(error.message || 'Failed to save vehicle');
@@ -177,6 +209,8 @@ function Vehicles() {
     } catch (error) {
       console.error('Error saving vehicle:', error);
       alert('Error saving vehicle');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -357,11 +391,33 @@ function Vehicles() {
           className="modal-premium"
           footer={
             <div className="modal-premium__actions">
-              <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="modal-premium__btn-cancel">
+              <Button 
+                variant="ghost" 
+                onClick={() => setIsModalOpen(false)} 
+                className="modal-premium__btn-cancel"
+                disabled={isSaving}
+              >
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleSave} className="modal-premium__btn-submit">
-                {editingVehicle ? 'Update' : 'Add'} Vehicle
+              <Button 
+                variant="primary" 
+                onClick={handleSave} 
+                className="modal-premium__btn-submit"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <span className="btn-spinner"></span>
+                    {editingVehicle ? 'Updating...' : 'Adding...'}
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {editingVehicle ? 'Update Vehicle' : 'Add Vehicle'}
+                  </>
+                )}
               </Button>
             </div>
           }
@@ -392,15 +448,34 @@ function Vehicles() {
           </div>
 
           <div className="modal-premium__content">
+            {/* Info Banner */}
+            <div className="form-info-banner">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span>All fields are required. Please ensure accurate information for proper vehicle registration.</span>
+            </div>
+
             <div className="form-grid">
               <div className="input-group">
-                <label className="input__label">Firm <span className="required">*</span></label>
-                <div className="input__container">
+                <label className="input__label">
+                  <BusinessIcon size={14} />
+                  Firm <span className="required">*</span>
+                </label>
+                <div className={`input__container input__container--with-icon ${formErrors.firmId ? 'input__container--error' : ''}`}>
+                  <div className="input__icon">
+                    <BusinessIcon size={18} />
+                  </div>
                   <select
-                    className="input__field"
+                    className="input__field input__field--with-icon"
                     value={formData.firmId}
-                    onChange={(e) => setFormData({ ...formData, firmId: e.target.value })}
-                    required
+                    onChange={(e) => {
+                      setFormData({ ...formData, firmId: e.target.value });
+                      setFormErrors({ ...formErrors, firmId: '' });
+                    }}
+                    disabled={isSaving}
                   >
                     <option value="">Select a firm</option>
                     {firms.map((firm) => (
@@ -410,46 +485,107 @@ function Vehicles() {
                     ))}
                   </select>
                 </div>
+                {formErrors.firmId && (
+                  <span className="input__error">{formErrors.firmId}</span>
+                )}
               </div>
+              
               <div className="input-group">
-                <label className="input__label">Vehicle Number <span className="required">*</span></label>
-                <div className="input__container">
+                <label className="input__label">
+                  <VehicleIcon size={14} />
+                  Vehicle Number <span className="required">*</span>
+                </label>
+                <div className={`input__container input__container--with-icon ${formErrors.vehicleNo ? 'input__container--error' : ''}`}>
+                  <div className="input__icon">
+                    <VehicleIcon size={18} />
+                  </div>
                   <input
                     type="text"
-                    className="input__field"
+                    className="input__field input__field--with-icon"
                     placeholder="e.g., GJ01AB1234"
                     value={formData.vehicleNo}
-                    onChange={(e) => setFormData({ ...formData, vehicleNo: e.target.value })}
-                    required
+                    onChange={(e) => {
+                      setFormData({ ...formData, vehicleNo: e.target.value.toUpperCase() });
+                      setFormErrors({ ...formErrors, vehicleNo: '' });
+                    }}
+                    disabled={isSaving}
                   />
                 </div>
+                {formErrors.vehicleNo && (
+                  <span className="input__error">{formErrors.vehicleNo}</span>
+                )}
               </div>
+              
               <div className="input-group">
-                <label className="input__label">Owner Name <span className="required">*</span></label>
-                <div className="input__container">
+                <label className="input__label">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  Owner Name <span className="required">*</span>
+                </label>
+                <div className={`input__container input__container--with-icon ${formErrors.ownerName ? 'input__container--error' : ''}`}>
+                  <div className="input__icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
                   <input
                     type="text"
-                    className="input__field"
-                    placeholder="Vehicle owner's name"
+                    className="input__field input__field--with-icon"
+                    placeholder="Vehicle owner's full name"
                     value={formData.ownerName}
-                    onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                    required
+                    onChange={(e) => {
+                      setFormData({ ...formData, ownerName: e.target.value });
+                      setFormErrors({ ...formErrors, ownerName: '' });
+                    }}
+                    disabled={isSaving}
                   />
                 </div>
+                {formErrors.ownerName && (
+                  <span className="input__error">{formErrors.ownerName}</span>
+                )}
               </div>
+              
               <div className="input-group">
-                <label className="input__label">Driver Phone <span className="required">*</span></label>
-                <div className="input__container">
+                <label className="input__label">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                  </svg>
+                  Driver Phone <span className="required">*</span>
+                </label>
+                <div className={`input__container input__container--with-icon ${formErrors.driverNumber ? 'input__container--error' : ''}`}>
+                  <div className="input__icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                    </svg>
+                  </div>
                   <input
-                    type="text"
-                    className="input__field"
-                    placeholder="Driver's phone number"
+                    type="tel"
+                    className="input__field input__field--with-icon"
+                    placeholder="10-digit mobile number"
                     value={formData.driverNumber}
-                    onChange={(e) => setFormData({ ...formData, driverNumber: e.target.value })}
-                    required
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setFormData({ ...formData, driverNumber: value });
+                      setFormErrors({ ...formErrors, driverNumber: '' });
+                    }}
+                    disabled={isSaving}
                   />
                 </div>
+                {formErrors.driverNumber && (
+                  <span className="input__error">{formErrors.driverNumber}</span>
+                )}
               </div>
+            </div>
+
+            {/* Security Notice */}
+            <div className="form-security-notice">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              
             </div>
           </div>
         </Modal>

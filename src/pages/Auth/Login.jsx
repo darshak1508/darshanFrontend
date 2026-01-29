@@ -33,6 +33,26 @@ const CheckCircleIcon = () => (
     </svg>
 );
 
+const EyeIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+);
+
+const EyeOffIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+        <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+);
+
+const ShieldIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+);
+
 function Login() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -44,6 +64,7 @@ function Login() {
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -98,7 +119,6 @@ function Login() {
         <div className="auth-container">
             <div className="auth-background">
                 <div className="auth-background__gradient"></div>
-                <div className="auth-background__grid"></div>
             </div>
 
             <div className="auth-content">
@@ -111,24 +131,9 @@ function Login() {
                             </svg>
                         </div>
                         <h1 className="auth-branding__title">Jay GuruDev</h1>
-                        <p className="auth-branding__subtitle">
-                            Professional business management platform for modern enterprises
-                        </p>
+                       
 
-                        <div className="auth-features">
-                            <div className="auth-feature">
-                                <CheckCircleIcon />
-                                <span>Comprehensive Analytics</span>
-                            </div>
-                            <div className="auth-feature">
-                                <CheckCircleIcon />
-                                <span>Real-time Tracking</span>
-                            </div>
-                            <div className="auth-feature">
-                                <CheckCircleIcon />
-                                <span>Secure & Reliable</span>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
 
@@ -138,7 +143,7 @@ function Login() {
                         <div className="auth-form-header">
                             <h2 className="auth-form-title">Welcome Back</h2>
                             <p className="auth-form-subtitle">
-                                Enter your credentials to access your account
+                                Sign in to your account
                             </p>
                         </div>
 
@@ -179,15 +184,24 @@ function Login() {
                                     <LockIcon />
                                     <input
                                         id="password"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         name="password"
-                                        className="auth-input"
+                                        className="auth-input auth-input--with-action"
                                         placeholder="Enter your password"
                                         value={formData.password}
                                         onChange={handleChange}
                                         disabled={isLoading}
                                         autoComplete="current-password"
                                     />
+                                    <button
+                                        type="button"
+                                        className="auth-input-action"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        disabled={isLoading}
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
+                                    >
+                                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                    </button>
                                 </div>
                             </div>
 
@@ -202,10 +216,15 @@ function Login() {
                                         Signing in...
                                     </>
                                 ) : (
-                                    'Sign In'
+                                    <>
+                                        <LockIcon />
+                                        Sign In Securely
+                                    </>
                                 )}
                             </button>
                         </form>
+
+                      
                     </div>
                 </div>
             </div>

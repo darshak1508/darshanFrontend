@@ -36,22 +36,12 @@
   animation: gradientShift 15s ease infinite;
 }
 
-.auth-background__grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(var(--color-border-subtle) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-border-subtle) 1px, transparent 1px);
-  background-size: 50px 50px;
-  opacity: 0.3;
-}
-
 @keyframes gradientShift {
   0%, 100% {
-    transform: scale(1) rotate(0deg);
+    opacity: 0.1;
   }
   50% {
-    transform: scale(1.2) rotate(5deg);
+    opacity: 0.15;
   }
 }
 
@@ -226,6 +216,7 @@
   left: 1rem;
   color: var(--color-text-tertiary);
   pointer-events: none;
+  z-index: 1;
 }
 
 .auth-input {
@@ -239,15 +230,46 @@
   transition: all 0.2s ease;
 }
 
+.auth-input--with-action {
+  padding-right: 3rem;
+}
+
+/* Password Toggle Button */
+.auth-input-action {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  z-index: 1;
+}
+
+.auth-input-action:hover:not(:disabled) {
+  color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.auth-input-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .auth-input::placeholder {
   color: var(--color-text-tertiary);
 }
 
 .auth-input:focus {
   outline: none;
-  border-color: var(--color-brand);
+  border-color: var(--color-brand-600);
   background: var(--color-bg-secondary);
-  box-shadow: 0 0 0 3px rgba(var(--color-brand-rgb), 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--color-brand-rgb), 0.15);
 }
 
 .auth-input:disabled {
@@ -330,6 +352,26 @@
   text-decoration: underline;
 }
 
+/* Security Footer */
+.auth-security-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+}
+
+.auth-security-footer svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--color-success-500);
+}
+
 /* Test Credentials */
 .auth-test-credentials {
   margin-top: 2rem;
@@ -390,5 +432,9 @@
 
   .auth-form-title {
     font-size: 1.5rem;
+  }
+
+  .auth-security-footer {
+    font-size: 0.75rem;
   }
 }
