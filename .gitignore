@@ -5,7 +5,7 @@
 .DS_Store
 
 # environment variables
-.env
+
 
 # testing
 /coverage
