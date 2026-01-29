@@ -247,9 +247,175 @@
   }
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 1024px) {
+  .search-wrapper {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Stats Grid */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3, 12px);
+  }
+  
+  /* Vehicle Table Card */
+  .vehicles-table-card__header {
+    padding: var(--space-3, 12px) var(--space-4, 16px);
+  }
+  
+  /* Search */
+  .search-wrapper {
+    max-width: 100%;
+  }
+  
+  .search-wrapper__input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Vehicle Cell - Make more compact */
+  .vehicle-cell {
+    gap: var(--space-2, 8px);
+  }
+  
+  .vehicle-cell__avatar {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .vehicle-cell__number {
+    font-size: 14px;
+  }
+  
+  .vehicle-cell__id {
+    font-size: 11px;
+  }
+  
+  /* Table Actions - Stack vertically if needed */
+  .table-actions {
+    gap: var(--space-1, 4px);
+  }
+  
+  .table-action {
+    width: 28px;
+    height: 28px;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    padding: var(--space-8, 32px) var(--space-4, 16px);
+  }
+  
+  .empty-state__icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .empty-state__title {
+    font-size: 16px;
+  }
+  
+  .empty-state__description {
+    font-size: 14px;
+  }
+  
+  /* Modal Form Grid */
+  .modal-premium .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .modal-premium__header {
+    padding: 20px;
+  }
+  
+  .modal-premium__content {
+    padding: 20px;
+  }
+  
+  .modal-premium__title {
+    font-size: 20px;
+  }
+  
+  .modal-premium__subtitle {
+    font-size: 13px;
+  }
+  
+  .modal-premium__header-icon {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .form-info-banner {
+    font-size: 12px;
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  .modal-premium .input__label {
+    font-size: 12px;
+  }
+  
+  .modal-premium .input__field {
+    font-size: 16px; /* Prevents zoom on iOS */
+    height: 42px;
+  }
+  
+  .modal-premium__actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  
+  .modal-premium__btn-cancel,
+  .modal-premium__btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 640px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .vehicles-table-card {
+    border-radius: var(--radius-lg, 12px);
+  }
+  
+  .empty-state {
+    padding: var(--space-6, 24px) var(--space-3, 12px);
+  }
+  
+  .modal-premium__header {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .modal-premium__header-content {
+    gap: 12px;
+  }
+  
+  .modal-premium__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+  
+  .modal-premium__content {
+    padding: 16px;
+  }
+  
+  .form-info-banner {
+    font-size: 11px;
+    padding: 10px;
+  }
+  
+  .form-security-notice {
+    font-size: 11px;
+    padding: 10px;
   }
 }
 

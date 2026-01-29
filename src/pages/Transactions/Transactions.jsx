@@ -15,6 +15,7 @@ import { apiCall } from '../../utils/auth';
 import {
   AppLayout,
   MainContent,
+  MobileHeader,
   PageHeader,
   Sidebar,
   SidebarProvider,
@@ -407,6 +408,10 @@ function Transactions() {
   return (
     <SidebarProvider>
       <AppLayout>
+        <MobileHeader 
+          brand="Jay GuruDev"
+          brandIcon={<BusinessIcon size={20} />}
+        />
         <Sidebar
           brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}

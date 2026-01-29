@@ -345,3 +345,168 @@
   margin: 0 0 var(--space-6, 24px) 0;
   max-width: 400px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Stats */
+  .pricing-stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-4, 16px);
+  }
+  
+  .pricing-stat-card__icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .pricing-stat-card__value {
+    font-size: 28px;
+  }
+  
+  .pricing-stat-card__label {
+    font-size: 13px;
+  }
+  
+  /* Search */
+  .pricing-search {
+    max-width: 100%;
+  }
+  
+  .pricing-search__input {
+    height: 48px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Pricing Card */
+  .pricing-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
+  }
+  
+  .pricing-card__firm {
+    width: 100%;
+  }
+  
+  .pricing-card__firm-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .pricing-card__firm-name {
+    font-size: 15px;
+  }
+  
+  .pricing-card__actions {
+    align-self: flex-end;
+  }
+  
+  .pricing-card__action {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .pricing-card__body {
+    padding: var(--space-4, 16px);
+  }
+  
+  .pricing-card__rates {
+    gap: var(--space-3, 12px);
+  }
+  
+  .pricing-card__rate-value {
+    font-size: 24px;
+  }
+  
+  .pricing-card__rate-value small {
+    font-size: 13px;
+  }
+  
+  .pricing-card__footer {
+    padding: var(--space-3, 12px) var(--space-4, 16px);
+  }
+  
+  .pricing-card__date {
+    font-size: 12px;
+  }
+  
+  /* Empty State */
+  .pricing-empty {
+    padding: var(--space-12, 48px) var(--space-4, 16px);
+  }
+  
+  .pricing-empty__icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .pricing-empty__title {
+    font-size: 18px;
+  }
+  
+  .pricing-empty__description {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Pricing Grid - Single column */
+  .pricing-grid {
+    gap: var(--space-4, 16px);
+  }
+  
+  /* Stats Card */
+  .pricing-stat-card {
+    padding: var(--space-3, 12px);
+  }
+  
+  .pricing-stat-card__icon {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .pricing-stat-card__value {
+    font-size: 24px;
+  }
+  
+  /* Pricing Card */
+  .pricing-card {
+    border-radius: var(--radius-xl, 16px);
+  }
+  
+  .pricing-card__rates {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .pricing-card__rate {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: var(--space-3, 12px);
+    background: var(--bg-secondary, #f9fafb);
+    border-radius: var(--radius-lg, 12px);
+  }
+  
+  .pricing-card__rate-divider {
+    display: none;
+  }
+  
+  .pricing-card__rate-label {
+    text-align: left;
+    margin-bottom: 0;
+  }
+  
+  .pricing-empty {
+    padding: var(--space-8, 32px) var(--space-3, 12px);
+  }
+  
+  .pricing-empty__icon {
+    width: 64px;
+    height: 64px;
+  }
+}

@@ -313,6 +313,8 @@
   .sidebar {
     transform: translateX(-100%);
     width: var(--sidebar-width);
+    z-index: 1000;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   }
   
   .sidebar--open {
@@ -330,6 +332,33 @@
   .sidebar--open .sidebar__item {
     justify-content: flex-start;
     padding: var(--space-2) var(--space-3);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE BACKDROP
+   ═══════════════════════════════════════════════════════════════ */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+  animation: fadeIn 200ms ease;
+}
+
+@media (min-width: 769px) {
+  .sidebar-backdrop {
+    display: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

@@ -3,6 +3,7 @@ export { default as UserProfile } from './UserProfile';
 export {
   AppLayout,
   MainContent,
+  MobileHeader,
   PageHeader,
   PageContent,
   TopNav,

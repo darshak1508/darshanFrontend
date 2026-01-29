@@ -279,3 +279,55 @@
   width: 48px;
   height: 48px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .btn {
+    font-size: 14px;
+  }
+  
+  .btn--sm {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+  
+  .btn--md {
+    height: 44px;
+    padding: 0 18px;
+    font-size: 15px;
+  }
+  
+  .btn--lg {
+    height: 52px;
+    padding: 0 28px;
+    font-size: 17px;
+  }
+  
+  .btn--icon-only.btn--sm {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .btn--icon-only.btn--md {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .btn--icon-only.btn--lg {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* Tablet and mobile - make buttons more touch-friendly */
+@media (max-width: 640px) {
+  /* Make buttons full-width by default on small screens when in flex containers */
+  .mobile-full-width-btns .btn {
+    width: 100%;
+  }
+}
