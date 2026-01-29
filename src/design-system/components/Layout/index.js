@@ -1,9 +1,10 @@
 export { default as Sidebar, SidebarProvider, useSidebar } from './Sidebar';
-export { 
-  AppLayout, 
-  MainContent, 
-  PageHeader, 
-  PageContent, 
+export { default as UserProfile } from './UserProfile';
+export {
+  AppLayout,
+  MainContent,
+  PageHeader,
+  PageContent,
   TopNav,
   SearchInput,
   Breadcrumbs,

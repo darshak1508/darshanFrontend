@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -17,6 +18,7 @@ import {
   PageHeader,
   Sidebar,
   SidebarProvider,
+  UserProfile,
 } from '../../design-system/components/Layout';
 import { StatCard } from '../../design-system/components/Card';
 import Button from '../../design-system/components/Button';
@@ -67,7 +69,7 @@ function Pricing() {
   const fetchPricing = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API.PRICING.GET_ALL);
+      const response = await apiCall('/pricing');
       if (response.ok) {
         const data = await response.json();
         setPricing(data);
@@ -87,7 +89,7 @@ function Pricing() {
   const handleDelete = async (pricingId) => {
     if (window.confirm('Are you sure you want to delete this pricing?')) {
       try {
-        const response = await fetch(API.PRICING.DELETE(pricingId), {
+        const response = await apiCall(`/pricing/${pricingId}`, {
           method: 'DELETE',
         });
         if (response.ok) {
@@ -120,9 +122,10 @@ function Pricing() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>

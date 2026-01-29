@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -17,6 +18,7 @@ import {
   PageHeader,
   Sidebar,
   SidebarProvider,
+  UserProfile,
 } from '../../design-system/components/Layout';
 import Button from '../../design-system/components/Button';
 
@@ -108,9 +110,9 @@ const formatDate = (dateString) => {
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  
+
   const time = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-  
+
   if (date.toDateString() === today.toDateString()) return `Today, ${time}`;
   if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${time}`;
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + `, ${time}`;
@@ -134,29 +136,29 @@ function DashboardNew() {
     setIsRefreshing(true);
     try {
       // Fetch firms count
-      const firmResponse = await fetch(API.FIRM.COUNT_TOTAL);
+      const firmResponse = await apiCall('/firm/count/total');
       if (firmResponse.ok) {
         const data = await firmResponse.json();
         setStats(prev => ({ ...prev, totalFirms: data.totalFirms || 0 }));
       }
 
       // Fetch today's stats
-      const todayResponse = await fetch(API.TRANSACTION.TODAY_TOTAL);
+      const todayResponse = await apiCall('/transaction/today/total');
       if (todayResponse.ok) {
         const data = await todayResponse.json();
-        setStats(prev => ({ 
-          ...prev, 
+        setStats(prev => ({
+          ...prev,
           todayRevenue: Number(data.totalAmount || 0),
           totalTransactions: data.transactionCount || 0,
         }));
       }
 
       // Fetch today's tonnage
-      const tonnageResponse = await fetch(API.TRANSACTION.TOTAL_TON_TODAY);
+      const tonnageResponse = await apiCall('/transaction/total-ton/today');
       if (tonnageResponse.ok) {
         const data = await tonnageResponse.json();
-        setStats(prev => ({ 
-          ...prev, 
+        setStats(prev => ({
+          ...prev,
           todayTonnage: Number(data.totalTon || 0),
           roTon: Number(data.roTon || 0),
           openTon: Number(data.openTon || 0),
@@ -164,7 +166,7 @@ function DashboardNew() {
       }
 
       // Fetch recent transactions
-      const transResponse = await fetch(API.TRANSACTION.GET_ALL);
+      const transResponse = await apiCall('/transaction/all');
       if (transResponse.ok) {
         const data = await transResponse.json();
         setRecentTransactions(data.slice(0, 5));
@@ -185,9 +187,10 @@ function DashboardNew() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<Icons.Business />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>
@@ -200,7 +203,7 @@ function DashboardNew() {
               </p>
             </div>
             <div className="dashboard-hero__actions">
-              <button 
+              <button
                 className={`dashboard-hero__refresh ${isRefreshing ? 'dashboard-hero__refresh--spinning' : ''}`}
                 onClick={fetchData}
                 title="Refresh data"
@@ -277,7 +280,7 @@ function DashboardNew() {
                   <h2 className="dashboard-card__title">Recent Transactions</h2>
                   <p className="dashboard-card__subtitle">Latest business activity</p>
                 </div>
-                <button 
+                <button
                   className="dashboard-card__link"
                   onClick={() => navigate('/transactions')}
                 >

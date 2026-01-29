@@ -1,135 +1,342 @@
 /**
- * Create Firm Page Styles
+ * Create Firm Page – Premium Enterprise Styling (FINAL)
+ * Polished SaaS / Fintech-grade UI
  */
 
-.create-firm__back {
-  margin-bottom: var(--space-6);
+/* ==========================================================================
+   Page Layout
+   ========================================================================== */
+
+.create-firm__page-header {
+  margin-bottom: 20px;
+}
+
+.create-firm__back-btn {
+  color: #6B7280;
+  transition: all 0.2s ease;
+}
+
+.create-firm__back-btn:hover {
+  color: #1F2937;
+  transform: translateX(-2px);
 }
 
 .create-firm__container {
   display: flex;
   justify-content: center;
+  padding-bottom: 32px;
 }
+
+/* ==========================================================================
+   Premium Card
+   ========================================================================== */
 
 .create-firm__card {
   width: 100%;
-  max-width: 600px;
-  padding: 0;
+  max-width: 720px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 6px 18px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Header */
+/* ==========================================================================
+   Header Section
+   ========================================================================== */
+
 .create-firm__header {
+  background: linear-gradient(135deg, #0891B2 0%, #0E7490 100%);
+  padding: 24px 32px;
+  position: relative;
+}
+
+.create-firm__header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.create-firm__header-content {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-700) 100%);
+  gap: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .create-firm__header-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.2);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-}
-
-.create-firm__header-text {
-  flex: 1;
+  color: #FFFFFF;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .create-firm__title {
-  font-size: var(--font-size-xl);
+  font-size: 22px;
   font-weight: 600;
-  color: white;
-  margin: 0;
+  color: #FFFFFF;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.01em;
 }
 
 .create-firm__subtitle {
-  font-size: var(--font-size-sm);
-  color: rgba(255, 255, 255, 0.8);
-  margin: var(--space-1) 0 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
 }
 
-/* Form */
+/* ==========================================================================
+   Alerts
+   ========================================================================== */
+
+.create-firm__alert {
+  display: flex;
+  gap: 12px;
+  padding: 14px 20px;
+  margin: 24px 32px 0;
+  border-radius: 12px;
+  font-size: 14px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.create-firm__alert--error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #B91C1C;
+}
+
+.create-firm__alert--success {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #15803D;
+}
+
+/* ==========================================================================
+   Form
+   ========================================================================== */
+
 .create-firm__form {
+  padding: 24px 32px;
+}
+
+.create-firm__section {
+  margin-bottom: 24px;
+}
+
+.create-firm__section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.create-firm__fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding: var(--space-6);
+  gap: 16px;
 }
 
-.form-row {
+.create-firm__field-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-4);
+  gap: 14px;
 }
 
 @media (max-width: 640px) {
-  .form-row {
+  .create-firm__field-row {
     grid-template-columns: 1fr;
   }
 }
 
-/* Actions */
+/* ==========================================================================
+   Input Fields – Premium
+   ========================================================================== */
+
+.create-firm__form .input__container {
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  background: #FFFFFF;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-firm__form .input__container:hover {
+  border-color: #CBD5E1;
+}
+
+.create-firm__form .input-wrapper--focused .input__container {
+  border-color: #0EA5E9;
+  box-shadow:
+    0 0 0 2px rgba(14, 165, 233, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.create-firm__form .input__field {
+  height: 40px;
+  font-size: 14px;
+  padding: 0 16px;
+  color: #1F2937;
+  outline: none;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.create-firm__form .input__field:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.create-firm__form .input__field::placeholder {
+  color: #9CA3AF;
+}
+
+/* Fix icon overlap */
+.create-firm__form .input__icon--left+.input__field {
+  padding-left: 0;
+}
+
+.create-firm__form .input__icon {
+  margin-left: 14px;
+  margin-right: 10px;
+  color: #9CA3AF;
+}
+
+.create-firm__form .input-wrapper--focused .input__icon {
+  color: #0EA5E9;
+}
+
+/* Textarea */
+.create-firm__form .input__field--textarea {
+  min-height: 80px;
+  padding: 10px 16px;
+  line-height: 1.5;
+}
+
+/* Error state */
+.create-firm__form .input-wrapper--error .input__container {
+  border-color: #EF4444;
+  background: rgba(239, 68, 68, 0.02);
+}
+
+.create-firm__form .input-wrapper--error.input-wrapper--focused .input__container {
+  box-shadow:
+    0 0 0 2px rgba(239, 68, 68, 0.12);
+}
+
+/* Helper text */
+.create-firm__form .input__helper {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   Actions
+   ========================================================================== */
+
 .create-firm__actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-subtle);
-  margin-top: var(--space-2);
+  gap: 12px;
+  padding-top: 20px;
+  margin-top: 24px;
+  border-top: 1px solid #E5E7EB;
 }
 
-/* Alerts */
-.alert {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  margin: 0 var(--space-6);
-  font-size: var(--font-size-sm);
+.create-firm__action-btn {
+  min-width: 120px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
 }
 
-.alert--error {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-error-700);
+.create-firm__action-btn--cancel {
+  color: #6B7280;
 }
 
-.alert--success {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--color-success-700);
+.create-firm__action-btn--cancel:hover {
+  background: #F9FAFB;
+  color: #1F2937;
 }
 
-.alert__close {
-  margin-left: auto;
-  font-size: 20px;
-  line-height: 1;
-  opacity: 0.6;
+.create-firm__action-btn--submit {
+  background: linear-gradient(135deg, #0EA5E9, #0284C7);
+  color: #FFFFFF;
+  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.35);
 }
 
-.alert__close:hover {
-  opacity: 1;
+.create-firm__action-btn--submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(14, 165, 233, 0.45);
 }
 
-/* Animation */
-.create-firm__card {
-  animation: fadeInUp 0.4s ease-out;
-}
+/* ==========================================================================
+   Animations
+   ========================================================================== */
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .create-firm__form {
+    padding: 24px;
+  }
+
+  .create-firm__header {
+    padding: 24px;
+  }
+
+  .create-firm__actions {
+    flex-direction: column-reverse;
+  }
+
+  .create-firm__action-btn {
+    width: 100%;
+  }
+
 }

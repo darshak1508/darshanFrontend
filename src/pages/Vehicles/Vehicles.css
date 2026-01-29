@@ -223,3 +223,187 @@
   color: var(--text-muted, #9ca3af);
   font-style: italic;
 }
+
+/* ==========================================================================
+   Premium Modal Styling
+   ========================================================================== */
+
+/* Remove default padding from modal content */
+.modal-premium .modal__content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.modal-premium .modal__footer {
+  background: white;
+  border-top: 1px solid #E5E7EB;
+}
+
+/* Custom Header */
+.modal-premium__header {
+  background: linear-gradient(135deg, #0891B2 0%, #0E7490 100%);
+  padding: 24px 32px;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Glassmorphism texture */
+.modal-premium__header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.modal-premium__header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-premium__header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-premium__header-text {
+  color: white;
+}
+
+.modal-premium__title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.01em;
+  color: #ffffff !important;
+  /* Force override */
+}
+
+.modal-premium__subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Close Button */
+.modal-premium__close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.modal-premium__close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+/* Modal Content Body */
+.modal-premium__content {
+  padding: 32px;
+}
+
+/* Form Styling Override */
+.modal-premium .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+/* Input Styles */
+.modal-premium .input__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.modal-premium .input__container {
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  background: #FFFFFF;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.modal-premium .input__container:hover {
+  border-color: #CBD5E1;
+}
+
+.modal-premium .input__container:focus-within {
+  border-color: #0EA5E9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.modal-premium .input__field {
+  width: 100%;
+  height: 42px;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #1F2937;
+}
+
+.modal-premium .input__field:focus {
+  outline: none;
+}
+
+/* Footer Actions */
+.modal-premium__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-premium__btn-cancel {
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.modal-premium__btn-cancel:hover {
+  background: #F3F4F6;
+  color: #111827;
+}
+
+.modal-premium__btn-submit {
+  background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
+  font-weight: 600;
+}
+
+.modal-premium__btn-submit:hover {
+  box-shadow: 0 4px 8px rgba(14, 165, 233, 0.3);
+  transform: translateY(-1px);
+}

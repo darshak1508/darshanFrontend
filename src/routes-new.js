@@ -17,6 +17,9 @@ import PriceEdit from './pages/Pricing/PriceEdit';
 import Transactions from './pages/Transactions';
 import TransactionForm from './pages/Transactions/TransactionForm';
 
+// Authentication Pages
+import { Login, Register } from './pages/Auth';
+
 // Icons
 import {
   DashboardIcon,
@@ -27,6 +30,24 @@ import {
 } from './design-system/icons';
 
 const routes = [
+  // Authentication Routes (public)
+  {
+    type: 'auth',
+    name: 'Login',
+    key: 'login',
+    route: '/login',
+    component: <Login />,
+    public: true,
+  },
+  {
+    type: 'auth',
+    name: 'Register',
+    key: 'register',
+    route: '/register',
+    component: <Register />,
+    public: true,
+  },
+  // Protected Routes
   {
     type: 'collapse',
     name: 'Dashboard',

@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -17,6 +18,7 @@ import {
   PageHeader,
   Sidebar,
   SidebarProvider,
+  UserProfile,
 } from '../../design-system/components/Layout';
 import { StatCard, Card } from '../../design-system/components/Card';
 import Button from '../../design-system/components/Button';
@@ -67,7 +69,7 @@ function Vehicles() {
   const [firms, setFirms] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
@@ -82,7 +84,7 @@ function Vehicles() {
   const fetchVehicles = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API.VEHICLE.GET_ALL);
+      const response = await apiCall('/vehicle');
       if (response.ok) {
         const data = await response.json();
         const transformedData = data.map((vehicle) => ({
@@ -105,7 +107,7 @@ function Vehicles() {
   // Fetch firms for dropdown
   const fetchFirms = async () => {
     try {
-      const response = await fetch(API.FIRM.GET_ALL);
+      const response = await apiCall('/firm');
       if (response.ok) {
         const data = await response.json();
         setFirms(data.map(f => ({ id: f.FirmID, name: f.FirmName })));
@@ -151,13 +153,12 @@ function Vehicles() {
     }
 
     try {
-      const url = editingVehicle 
-        ? API.VEHICLE.UPDATE(editingVehicle.id)
-        : API.VEHICLE.CREATE;
-      
-      const response = await fetch(url, {
+      const endpoint = editingVehicle
+        ? `/vehicle/${editingVehicle.id}`
+        : '/vehicle';
+
+      const response = await apiCall(endpoint, {
         method: editingVehicle ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           FirmId: parseInt(formData.firmId),
           VehicleNo: formData.vehicleNo,
@@ -183,7 +184,7 @@ function Vehicles() {
   const handleDelete = async (vehicleId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       try {
-        const response = await fetch(API.VEHICLE.DELETE(vehicleId), {
+        const response = await apiCall(`/vehicle/${vehicleId}`, {
           method: 'DELETE',
         });
 
@@ -266,9 +267,10 @@ function Vehicles() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>
@@ -348,69 +350,106 @@ function Vehicles() {
         <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title={editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}
-          description={editingVehicle ? 'Update vehicle information' : 'Register a new vehicle'}
+          title={null}
+          description={null}
+          showCloseButton={false}
           size="lg"
+          className="modal-premium"
           footer={
-            <>
-              <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
+            <div className="modal-premium__actions">
+              <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="modal-premium__btn-cancel">
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleSave}>
+              <Button variant="primary" onClick={handleSave} className="modal-premium__btn-submit">
                 {editingVehicle ? 'Update' : 'Add'} Vehicle
               </Button>
-            </>
+            </div>
           }
         >
-          <div className="form-grid">
-            <div className="input-group">
-              <label className="input__label">Firm <span className="required">*</span></label>
-              <select
-                className="input__field"
-                value={formData.firmId}
-                onChange={(e) => setFormData({ ...formData, firmId: e.target.value })}
-                required
-              >
-                <option value="">Select a firm</option>
-                {firms.map((firm) => (
-                  <option key={firm.id} value={firm.id}>
-                    {firm.name}
-                  </option>
-                ))}
-              </select>
+          {/* Custom Header */}
+          <div className="modal-premium__header">
+            <div className="modal-premium__header-content">
+              <div className="modal-premium__header-icon">
+                <VehicleIcon size={24} />
+              </div>
+              <div className="modal-premium__header-text">
+                <h2 className="modal-premium__title">{editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'}</h2>
+                <p className="modal-premium__subtitle">
+                  {editingVehicle ? 'Update vehicle information' : 'Register a new vehicle'}
+                </p>
+              </div>
             </div>
-            <div className="input-group">
-              <label className="input__label">Vehicle Number <span className="required">*</span></label>
-              <input
-                type="text"
-                className="input__field"
-                placeholder="e.g., GJ01AB1234"
-                value={formData.vehicleNo}
-                onChange={(e) => setFormData({ ...formData, vehicleNo: e.target.value })}
-                required
-              />
-            </div>
-            <div className="input-group">
-              <label className="input__label">Owner Name <span className="required">*</span></label>
-              <input
-                type="text"
-                className="input__field"
-                placeholder="Vehicle owner's name"
-                value={formData.ownerName}
-                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                required
-              />
-            </div>
-            <div className="input-group">
-              <label className="input__label">Driver Phone <span className="required">*</span></label>
-              <input
-                type="text"
-                className="input__field"
-                placeholder="Driver's phone number"
-                value={formData.driverNumber}
-                onChange={(e) => setFormData({ ...formData, driverNumber: e.target.value })}
-                required
-              />
+            <button
+              className="modal-premium__close"
+              onClick={() => setIsModalOpen(false)}
+              aria-label="Close modal"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div className="modal-premium__content">
+            <div className="form-grid">
+              <div className="input-group">
+                <label className="input__label">Firm <span className="required">*</span></label>
+                <div className="input__container">
+                  <select
+                    className="input__field"
+                    value={formData.firmId}
+                    onChange={(e) => setFormData({ ...formData, firmId: e.target.value })}
+                    required
+                  >
+                    <option value="">Select a firm</option>
+                    {firms.map((firm) => (
+                      <option key={firm.id} value={firm.id}>
+                        {firm.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="input-group">
+                <label className="input__label">Vehicle Number <span className="required">*</span></label>
+                <div className="input__container">
+                  <input
+                    type="text"
+                    className="input__field"
+                    placeholder="e.g., GJ01AB1234"
+                    value={formData.vehicleNo}
+                    onChange={(e) => setFormData({ ...formData, vehicleNo: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="input-group">
+                <label className="input__label">Owner Name <span className="required">*</span></label>
+                <div className="input__container">
+                  <input
+                    type="text"
+                    className="input__field"
+                    placeholder="Vehicle owner's name"
+                    value={formData.ownerName}
+                    onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="input-group">
+                <label className="input__label">Driver Phone <span className="required">*</span></label>
+                <div className="input__container">
+                  <input
+                    type="text"
+                    className="input__field"
+                    placeholder="Driver's phone number"
+                    value={formData.driverNumber}
+                    onChange={(e) => setFormData({ ...formData, driverNumber: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </Modal>

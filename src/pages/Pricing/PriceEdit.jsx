@@ -9,6 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -17,6 +18,7 @@ import {
   PageHeader,
   Sidebar,
   SidebarProvider,
+  UserProfile,
 } from '../../design-system/components/Layout';
 import Button from '../../design-system/components/Button';
 
@@ -58,12 +60,12 @@ function PriceEdit() {
   const navigate = useNavigate();
   const { firmId } = useParams();
   const isNew = firmId === 'new';
-  
+
   const [firms, setFirms] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingPrice, setExistingPrice] = useState(null);
   const [success, setSuccess] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     firmId: isNew ? '' : firmId,
     roTonPrice: '',
@@ -74,13 +76,13 @@ function PriceEdit() {
   useEffect(() => {
     const fetchFirms = async () => {
       try {
-        const response = await fetch(API.FIRM.GET_ALL);
+        const response = await apiCall('/firm');
         if (response.ok) {
           const data = await response.json();
           setFirms(data.map(f => ({ id: f.FirmID, name: f.FirmName })));
         }
       } catch (error) {
-        console.error('Error fetching firms:', error);
+        console.error('Error fetchingfirms:', error);
       }
     };
     fetchFirms();
@@ -90,9 +92,9 @@ function PriceEdit() {
   useEffect(() => {
     const fetchPrice = async () => {
       if (isNew || !firmId) return;
-      
+
       try {
-        const response = await fetch(API.PRICING.GET_ALL);
+        const response = await apiCall('/pricing');
         if (response.ok) {
           const allPricing = await response.json();
           const data = allPricing.find(p => p.FirmID?.toString() === firmId);
@@ -115,7 +117,7 @@ function PriceEdit() {
   // Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.firmId || !formData.roTonPrice || !formData.openTonPrice) {
       alert('Please fill in all required fields');
       return;
@@ -123,13 +125,12 @@ function PriceEdit() {
 
     setIsSubmitting(true);
     try {
-      const url = existingPrice 
-        ? API.PRICING.UPDATE(formData.firmId)
-        : API.PRICING.CREATE(formData.firmId);
-      
-      const response = await fetch(url, {
+      const endpoint = existingPrice
+        ? `/pricing/${formData.firmId}`
+        : `/pricing/${formData.firmId}`;
+
+      const response = await apiCall(endpoint, {
         method: existingPrice ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           RoTonPrice: parseFloat(formData.roTonPrice),
           OpenTonPrice: parseFloat(formData.openTonPrice),
@@ -164,7 +165,7 @@ function PriceEdit() {
     return (
       <SidebarProvider>
         <AppLayout>
-          <Sidebar brand="Business Manager" brandIcon={<BusinessIcon size={20} />} routes={navigationRoutes} />
+          <Sidebar brand="Jay GuruDev" brandIcon={<BusinessIcon size={20} />} routes={navigationRoutes} />
           <MainContent>
             <div className="price-success">
               <div className="price-success__icon">
@@ -183,9 +184,10 @@ function PriceEdit() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>

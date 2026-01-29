@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -17,6 +18,7 @@ import {
   PageHeader,
   Sidebar,
   SidebarProvider,
+  UserProfile,
 } from '../../design-system/components/Layout';
 import Button from '../../design-system/components/Button';
 
@@ -101,7 +103,7 @@ function Transactions() {
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
-  
+
   // Filter state
   const [filters, setFilters] = useState({
     search: '',
@@ -119,7 +121,7 @@ function Transactions() {
     roTonPrice: '',
     openTonPrice: '',
   });
-  
+
   // Stats
   const [stats, setStats] = useState({
     total: 0,
@@ -162,10 +164,10 @@ function Transactions() {
   // Fetch firms
   const fetchFirms = async () => {
     try {
-      const response = await fetch(API.FIRM.GET_ALL);
+      const response = await apiCall('/firm');
       if (response.ok) {
         const data = await response.json();
-        setFirms(data || []);
+        setFirms(data);
       }
     } catch (error) {
       console.error('Error fetching firms:', error);
@@ -175,10 +177,10 @@ function Transactions() {
   // Fetch vehicles by firm
   const fetchVehiclesByFirm = async (firmId) => {
     try {
-      const response = await fetch(API.VEHICLE.GET_BY_FIRM(firmId));
+      const response = await apiCall(`/vehicle/byFirm/${firmId}`);
       if (response.ok) {
         const data = await response.json();
-        setVehicles(data || []);
+        setVehicles(data); // Changed from setFirmVehicles to setVehicles to match existing state
       }
     } catch (error) {
       console.error('Error fetching vehicles:', error);
@@ -189,18 +191,17 @@ function Transactions() {
   const fetchTransactions = async () => {
     setIsLoading(true);
     try {
-      const url = API.TRANSACTION.GET_ALL;
-      console.log('Fetching transactions from:', url);
-      
-      const response = await fetch(url);
-      console.log('Response status:', response.status);
-      
+      let url = '/transaction/all';
+      if (filters.firmId) { // Changed from filters.firm to filters.firmId to match existing state
+        url = `/transaction/by-firm/${filters.firmId}`;
+      }
+
+      const response = await apiCall(url);
+
       if (response.ok) {
         const data = await response.json();
         console.log('Transactions fetched:', data);
-        setTransactions(data || []);
-      } else {
-        console.error('API Error:', response.status, response.statusText);
+        setTransactions(data);
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -218,32 +219,32 @@ function Transactions() {
   const filteredTransactions = transactions.filter((t) => {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         t.Firm?.FirmName?.toLowerCase().includes(searchLower) ||
         t.Vehicle?.VehicleNo?.toLowerCase().includes(searchLower) ||
         String(t.RoNumber || '').toLowerCase().includes(searchLower) ||
         String(t.TransactionID || '').includes(searchLower);
       if (!matchesSearch) return false;
     }
-    
+
     if (filters.firmId) {
       if (String(t.FirmID) !== filters.firmId) return false;
     }
-    
+
     if (filters.startDate) {
       const transDate = new Date(t.TransactionDate);
       const startDate = new Date(filters.startDate);
       startDate.setHours(0, 0, 0, 0);
       if (transDate < startDate) return false;
     }
-    
+
     if (filters.endDate) {
       const transDate = new Date(t.TransactionDate);
       const endDate = new Date(filters.endDate);
       endDate.setHours(23, 59, 59, 999);
       if (transDate > endDate) return false;
     }
-    
+
     return true;
   });
 
@@ -269,7 +270,7 @@ function Transactions() {
     const today = new Date();
     let startDate = '';
     let endDate = formatDateForInput(today);
-    
+
     switch (type) {
       case 'today':
         startDate = formatDateForInput(today);
@@ -293,7 +294,7 @@ function Transactions() {
       default:
         break;
     }
-    
+
     setFilters(prev => ({ ...prev, startDate, endDate }));
   };
 
@@ -309,28 +310,31 @@ function Transactions() {
       TransactionDate: formatDateForInput(transaction.TransactionDate),
     });
     fetchVehiclesByFirm(transaction.FirmID);
+    setIsEditModalOpen(true); // Open the modal
   };
 
   // Update transaction
   const handleUpdateTransaction = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch(API.TRANSACTION.UPDATE(editingTransaction.TransactionID), {
+      const transactionData = {
+        FirmID: parseInt(editForm.FirmID),
+        VehicleID: parseInt(editForm.VehicleID),
+        RoNumber: editForm.RoNumber,
+        TotalTon: parseFloat(editForm.TotalTon),
+        RoTon: parseFloat(editForm.RoTon),
+        TransactionDate: editForm.TransactionDate,
+      };
+
+      const response = await apiCall(`/transaction/${editingTransaction.TransactionID}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          FirmID: parseInt(editForm.FirmID),
-          VehicleID: parseInt(editForm.VehicleID),
-          RoNumber: editForm.RoNumber,
-          TotalTon: parseFloat(editForm.TotalTon),
-          RoTon: parseFloat(editForm.RoTon),
-          TransactionDate: editForm.TransactionDate,
-        }),
+        body: JSON.stringify(transactionData),
       });
 
       if (response.ok) {
+        setIsEditModalOpen(false);
         setEditingTransaction(null);
         fetchTransactions();
       } else {
@@ -348,12 +352,12 @@ function Transactions() {
   // Delete transaction
   const handleDelete = async (transactionId) => {
     if (!window.confirm('Are you sure you want to delete this transaction?')) return;
-    
+
     try {
-      const response = await fetch(API.TRANSACTION.DELETE(transactionId), {
+      const response = await apiCall(`/transaction/${transactionId}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         fetchTransactions();
       } else {
@@ -372,15 +376,15 @@ function Transactions() {
     }
 
     let url = `${API.TRANSACTION.REPORT_PDF}?startDate=${reportSettings.startDate}&endDate=${reportSettings.endDate}`;
-    
+
     if (reportSettings.firmId) {
       url += `&firmId=${reportSettings.firmId}`;
     }
-    
+
     if (reportSettings.useCustomPricing && reportSettings.roTonPrice && reportSettings.openTonPrice) {
       url += `&roTonPrice=${reportSettings.roTonPrice}&openTonPrice=${reportSettings.openTonPrice}`;
     }
-    
+
     window.open(url, '_blank');
   };
 
@@ -392,11 +396,11 @@ function Transactions() {
     }
 
     let url = `${API.TRANSACTION.REPORT_EXCEL}?startDate=${reportSettings.startDate}&endDate=${reportSettings.endDate}`;
-    
+
     if (reportSettings.firmId) {
       url += `&firmId=${reportSettings.firmId}`;
     }
-    
+
     window.open(url, '_blank');
   };
 
@@ -404,9 +408,10 @@ function Transactions() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>
@@ -440,7 +445,7 @@ function Transactions() {
                 <h3><DownloadIcon size={20} /> Download Report</h3>
                 <p>Generate PDF or Excel reports with optional custom pricing</p>
               </div>
-              
+
               <div className="trans-download-section__body">
                 <div className="trans-download-section__row">
                   <div className="trans-filter-field">
@@ -454,7 +459,7 @@ function Transactions() {
                       onChange={(e) => setReportSettings(prev => ({ ...prev, startDate: e.target.value }))}
                     />
                   </div>
-                  
+
                   <div className="trans-filter-field">
                     <label className="trans-filter-field__label">
                       <CalendarIcon size={16} /> To Date *
@@ -466,7 +471,7 @@ function Transactions() {
                       onChange={(e) => setReportSettings(prev => ({ ...prev, endDate: e.target.value }))}
                     />
                   </div>
-                  
+
                   <div className="trans-filter-field">
                     <label className="trans-filter-field__label">
                       <BusinessIcon size={16} /> Firm (Optional)
@@ -494,7 +499,7 @@ function Transactions() {
                     />
                     <span>Use Custom Pricing for Report</span>
                   </label>
-                  
+
                   {reportSettings.useCustomPricing && (
                     <div className="trans-custom-pricing__fields">
                       <div className="trans-filter-field">
@@ -605,8 +610,8 @@ function Transactions() {
                   onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                 />
               </div>
-              
-              <button 
+
+              <button
                 className={`trans-filter-toggle ${showFilters ? 'trans-filter-toggle--active' : ''}`}
                 onClick={() => setShowFilters(!showFilters)}
               >
@@ -666,7 +671,7 @@ function Transactions() {
                   <button className="trans-filters__quick-btn" onClick={() => setQuickDateFilter('yesterday')}>Yesterday</button>
                   <button className="trans-filters__quick-btn" onClick={() => setQuickDateFilter('week')}>Last 7 Days</button>
                   <button className="trans-filters__quick-btn" onClick={() => setQuickDateFilter('month')}>Last 30 Days</button>
-                  
+
                   {hasActiveFilters && (
                     <button className="trans-filters__clear-btn" onClick={clearFilters}>
                       <ClearIcon size={14} /> Clear All
@@ -700,14 +705,14 @@ function Transactions() {
                     <div className="trans-card__header-right">
                       <div className="trans-card__date">{formatDate(t.TransactionDate)}</div>
                       <div className="trans-card__actions">
-                        <button 
+                        <button
                           className="trans-card__action trans-card__action--edit"
                           onClick={() => handleEdit(t)}
                           title="Edit transaction"
                         >
                           <EditIcon size={16} />
                         </button>
-                        <button 
+                        <button
                           className="trans-card__action trans-card__action--delete"
                           onClick={() => handleDelete(t.TransactionID)}
                           title="Delete transaction"
@@ -788,7 +793,7 @@ function Transactions() {
                     <ClearIcon size={20} />
                   </button>
                 </div>
-                
+
                 <form onSubmit={handleUpdateTransaction} className="trans-modal__body">
                   <div className="trans-modal__row">
                     <div className="trans-filter-field">
@@ -808,7 +813,7 @@ function Transactions() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div className="trans-filter-field">
                       <label className="trans-filter-field__label">Vehicle</label>
                       <select
@@ -836,7 +841,7 @@ function Transactions() {
                         required
                       />
                     </div>
-                    
+
                     <div className="trans-filter-field">
                       <label className="trans-filter-field__label">Transaction Date</label>
                       <input
@@ -860,7 +865,7 @@ function Transactions() {
                         required
                       />
                     </div>
-                    
+
                     <div className="trans-filter-field">
                       <label className="trans-filter-field__label">RO Ton</label>
                       <input

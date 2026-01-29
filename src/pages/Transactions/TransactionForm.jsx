@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -17,6 +18,7 @@ import {
   PageHeader,
   Sidebar,
   SidebarProvider,
+  UserProfile,
 } from '../../design-system/components/Layout';
 import Button from '../../design-system/components/Button';
 
@@ -61,7 +63,7 @@ function TransactionForm() {
   const [pricing, setPricing] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
-  
+
   const [formData, setFormData] = useState({
     firmId: '',
     vehicleId: '',
@@ -83,10 +85,10 @@ function TransactionForm() {
   useEffect(() => {
     const fetchFirms = async () => {
       try {
-        const response = await fetch(API.FIRM.GET_ALL);
+        const response = await apiCall('/firm');
         if (response.ok) {
           const data = await response.json();
-          setFirms(data.map(f => ({ id: f.FirmID, name: f.FirmName })));
+          setFirms(data);
         }
       } catch (error) {
         console.error('Error fetching firms:', error);
@@ -102,24 +104,27 @@ function TransactionForm() {
         setVehicles([]);
         return;
       }
+
+      setVehiclesLoading(true);
       try {
-        const response = await fetch(API.VEHICLE.GET_BY_FIRM(formData.firmId));
+        const response = await apiCall(`/vehicle/byFirm/${formData.firmId}`);
         if (response.ok) {
           const data = await response.json();
-          setVehicles(data.map(v => ({ id: v.VehicleID, vehicleNo: v.VehicleNo })));
+          setVehicles(data);
         }
       } catch (error) {
         console.error('Error fetching vehicles:', error);
         try {
-          const allResponse = await fetch(API.VEHICLE.GET_ALL);
+          const allResponse = await apiCall('/vehicle');
           if (allResponse.ok) {
-            const data = await allResponse.json();
-            const filtered = data.filter(v => v.FirmID == formData.firmId);
-            setVehicles(filtered.map(v => ({ id: v.VehicleID, vehicleNo: v.VehicleNo })));
+            const allData = await allResponse.json();
+            setVehicles(allData.filter(v => v.FirmID?.toString() === formData.firmId));
           }
         } catch (err) {
           console.error('Error fetching all vehicles:', err);
         }
+      } finally {
+        setVehiclesLoading(false);
       }
     };
     fetchVehicles();
@@ -132,8 +137,10 @@ function TransactionForm() {
         setPricing(null);
         return;
       }
+
+      setPricingLoading(true);
       try {
-        const response = await fetch(API.PRICING.GET_ALL);
+        const response = await apiCall('/pricing');
         if (response.ok) {
           const allPricing = await response.json();
           const firmPricing = allPricing.find(p => p.FirmID?.toString() === formData.firmId);
@@ -141,6 +148,8 @@ function TransactionForm() {
         }
       } catch (error) {
         console.error('Error fetching pricing:', error);
+      } finally {
+        setPricingLoading(false);
       }
     };
     fetchPricing();
@@ -151,14 +160,14 @@ function TransactionForm() {
     const totalTon = parseFloat(formData.totalTon) || 0;
     const roTon = parseFloat(formData.roTon) || 0;
     const openTon = Math.max(0, totalTon - roTon);
-    
+
     const roTonPrice = pricing?.RoTonPrice || 0;
     const openTonPrice = pricing?.OpenTonPrice || 0;
-    
+
     const roPrice = roTon * roTonPrice;
     const openPrice = openTon * openTonPrice;
     const totalPrice = roPrice + openPrice;
-    
+
     setCalculated({
       openTon: openTon.toFixed(2),
       roPrice: roPrice.toFixed(2),
@@ -170,9 +179,11 @@ function TransactionForm() {
   // Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setError(null);
+    setSuccess(false);
+
     if (!formData.firmId || !formData.vehicleId || !formData.roNumber || !formData.totalTon || !formData.roTon) {
-      alert('Please fill in all required fields');
+      setError('Please fill in all required fields');
       return;
     }
 
@@ -180,39 +191,40 @@ function TransactionForm() {
     const roTon = parseFloat(formData.roTon);
 
     if (roTon > totalTon) {
-      alert('RO Ton cannot be greater than Total Ton');
+      setError('RO Ton cannot be greater than Total Ton');
       return;
     }
 
     if (!pricing) {
-      alert('No pricing configured for this firm. Please set up pricing first.');
+      setError('No pricing configured for this firm. Please set up pricing first.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(API.TRANSACTION.CREATE, {
+      const transactionData = {
+        FirmID: parseInt(formData.firmId),
+        VehicleID: parseInt(formData.vehicleId),
+        RoNumber: formData.roNumber,
+        TotalTon: totalTon,
+        RoTon: roTon,
+        TransactionDate: formData.transactionDate,
+      };
+      const response = await apiCall('/transaction', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          FirmID: parseInt(formData.firmId),
-          VehicleID: parseInt(formData.vehicleId),
-          RoNumber: formData.roNumber,
-          TotalTon: totalTon,
-          RoTon: roTon,
-          TransactionDate: formData.transactionDate,
-        }),
+        body: JSON.stringify(transactionData),
       });
 
       if (response.ok) {
-        navigate('/transactions');
+        setSuccess(true);
+        setTimeout(() => navigate('/transactions'), 2000);
       } else {
         const error = await response.json();
-        alert(error.message || 'Failed to create transaction');
+        setError(error.message || 'Failed to create transaction');
       }
     } catch (error) {
       console.error('Error creating transaction:', error);
-      alert('Error creating transaction');
+      setError('Error creating transaction. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -221,7 +233,7 @@ function TransactionForm() {
   const selectedFirm = firms.find(f => f.id.toString() === formData.firmId);
   const selectedVehicle = vehicles.find(v => v.id.toString() === formData.vehicleId);
 
-  const canProceed = step === 1 
+  const canProceed = step === 1
     ? formData.firmId && formData.vehicleId && formData.roNumber
     : formData.totalTon && formData.roTon && pricing;
 
@@ -229,9 +241,10 @@ function TransactionForm() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>
@@ -499,7 +512,7 @@ function TransactionForm() {
               <div className="transaction-summary">
                 <div className="summary-card">
                   <h3 className="summary-card__title">Transaction Summary</h3>
-                  
+
                   <div className="summary-section">
                     <div className="summary-item">
                       <span className="summary-item__label">Firm</span>

@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -18,6 +19,7 @@ import {
   PageHeader,
   Sidebar,
   SidebarProvider,
+  UserProfile,
 } from '../../design-system/components/Layout';
 import { StatCard, Card } from '../../design-system/components/Card';
 import Button from '../../design-system/components/Button';
@@ -71,7 +73,7 @@ function Firms() {
   const [firms, setFirms] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingFirm, setEditingFirm] = useState(null);
@@ -88,7 +90,7 @@ function Firms() {
   const fetchFirms = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API.FIRM.GET_ALL);
+      const response = await apiCall('/firm');
       if (response.ok) {
         const data = await response.json();
         const transformedData = data.map((firm) => ({
@@ -137,9 +139,8 @@ function Firms() {
   // Handle update
   const handleUpdate = async () => {
     try {
-      const response = await fetch(API.FIRM.UPDATE(editingFirm.id), {
+      const response = await apiCall(`/firm/${editingFirm.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           FirmName: formData.firmName,
           ContactPerson: formData.contactPerson,
@@ -166,7 +167,7 @@ function Firms() {
   const handleDelete = async (firmId) => {
     if (window.confirm('Are you sure you want to delete this firm?')) {
       try {
-        const response = await fetch(API.FIRM.DELETE(firmId), {
+        const response = await apiCall(`/firm/${firmId}`, {
           method: 'DELETE',
         });
 
@@ -253,9 +254,10 @@ function Firms() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>

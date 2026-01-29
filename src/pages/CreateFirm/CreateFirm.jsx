@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 // API Config
 import API from '../../config/api';
+import { apiCall } from '../../utils/auth';
 
 // Design System Components
 import {
@@ -16,6 +17,7 @@ import {
   MainContent,
   Sidebar,
   SidebarProvider,
+  UserProfile,
   Breadcrumbs,
   BreadcrumbItem,
 } from '../../design-system/components/Layout';
@@ -88,9 +90,8 @@ function CreateFirm() {
     setError(null);
 
     try {
-      const response = await fetch(API.FIRM.CREATE, {
+      const response = await apiCall('/firm', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           FirmName: formData.firmName,
           ContactPerson: formData.contactPerson,
@@ -120,118 +121,157 @@ function CreateFirm() {
     <SidebarProvider>
       <AppLayout>
         <Sidebar
-          brand="Business Manager"
+          brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
           routes={navigationRoutes}
+          footer={<UserProfile />}
         />
 
         <MainContent>
-          {/* Back button */}
-          <div className="create-firm__back">
+          {/* Page Header */}
+          <div className="create-firm__page-header">
             <Button
               variant="ghost"
               leftIcon={<ArrowLeftIcon size={18} />}
               onClick={() => navigate('/firms')}
+              className="create-firm__back-btn"
             >
               Back to Firms
             </Button>
           </div>
 
-          {/* Form Card */}
+          {/* Form Container */}
           <div className="create-firm__container">
-            <Card className="create-firm__card">
-              {/* Header */}
+            <div className="create-firm__card">
+              {/* Premium Header */}
               <div className="create-firm__header">
-                <div className="create-firm__header-icon">
-                  <BusinessIcon size={28} />
-                </div>
-                <div className="create-firm__header-text">
-                  <h1 className="create-firm__title">Add New Firm</h1>
-                  <p className="create-firm__subtitle">
-                    Enter the details of your new business partner
-                  </p>
+                <div className="create-firm__header-content">
+                  <div className="create-firm__header-icon-wrapper">
+                    <div className="create-firm__header-icon">
+                      <BusinessIcon size={24} />
+                    </div>
+                  </div>
+                  <div className="create-firm__header-text">
+                    <h1 className="create-firm__title">Create Firm</h1>
+                    <p className="create-firm__subtitle">
+                      Add and manage business partners effortlessly
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Alerts */}
               {error && (
-                <div className="alert alert--error">
-                  <AlertCircleIcon size={20} />
-                  <span>{error}</span>
-                  <button className="alert__close" onClick={() => setError(null)}>×</button>
+                <div className="create-firm__alert create-firm__alert--error">
+                  <div className="create-firm__alert-icon">
+                    <AlertCircleIcon size={20} />
+                  </div>
+                  <span className="create-firm__alert-message">{error}</span>
+                  <button
+                    className="create-firm__alert-close"
+                    onClick={() => setError(null)}
+                    aria-label="Close alert"
+                  >
+                    ×
+                  </button>
                 </div>
               )}
 
               {success && (
-                <div className="alert alert--success">
-                  <CheckCircleIcon size={20} />
-                  <span>Firm created successfully! Redirecting...</span>
+                <div className="create-firm__alert create-firm__alert--success">
+                  <div className="create-firm__alert-icon">
+                    <CheckCircleIcon size={20} />
+                  </div>
+                  <span className="create-firm__alert-message">
+                    Firm created successfully! Redirecting...
+                  </span>
                 </div>
               )}
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="create-firm__form">
-                <Input
-                  label="Firm Name"
-                  name="firmName"
-                  value={formData.firmName}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter firm name"
-                  leftIcon={<BusinessIcon size={18} />}
-                />
-
-                <div className="form-row">
-                  <Input
-                    label="Contact Person"
-                    name="contactPerson"
-                    value={formData.contactPerson}
-                    onChange={handleChange}
-                    placeholder="Enter contact person name"
-                    leftIcon={<UserIcon size={18} />}
-                  />
-                  <Input
-                    label="Phone Number"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Enter phone number"
-                    leftIcon={<PhoneIcon size={18} />}
-                  />
+                {/* Section: Basic Information */}
+                <div className="create-firm__section">
+                  <h3 className="create-firm__section-title">Basic Information</h3>
+                  <div className="create-firm__fields">
+                    <Input
+                      label="Firm Name"
+                      name="firmName"
+                      value={formData.firmName}
+                      onChange={handleChange}
+                      required
+                      placeholder="e.g., Acme Corporation"
+                      leftIcon={<BusinessIcon size={18} />}
+                    />
+                  </div>
                 </div>
 
-                <Input
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter email address"
-                  leftIcon={<MailIcon size={18} />}
-                />
+                {/* Section: Contact Details */}
+                <div className="create-firm__section">
+                  <h3 className="create-firm__section-title">Contact Details</h3>
+                  <div className="create-firm__fields">
+                    <div className="create-firm__field-row">
+                      <Input
+                        label="Contact Person"
+                        name="contactPerson"
+                        value={formData.contactPerson}
+                        onChange={handleChange}
+                        placeholder="e.g., John Doe"
+                        leftIcon={<UserIcon size={18} />}
+                      />
+                      <Input
+                        label="Phone Number"
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={handleChange}
+                        placeholder="e.g., +1 234 567 8900"
+                        leftIcon={<PhoneIcon size={18} />}
+                      />
+                    </div>
 
-                <Textarea
-                  label="Address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Enter full address"
-                  rows={3}
-                />
+                    <Input
+                      label="Email Address"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="e.g., contact@acme.com"
+                      leftIcon={<MailIcon size={18} />}
+                    />
+                  </div>
+                </div>
 
-                <Input
-                  label="City"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  placeholder="Enter city"
-                />
+                {/* Section: Location */}
+                <div className="create-firm__section">
+                  <h3 className="create-firm__section-title">Location</h3>
+                  <div className="create-firm__fields">
+                    <Textarea
+                      label="Address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Enter complete street address"
+                      rows={3}
+                    />
+
+                    <Input
+                      label="City"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      placeholder="e.g., New York"
+                      leftIcon={<MapPinIcon size={18} />}
+                    />
+                  </div>
+                </div>
 
                 {/* Actions */}
                 <div className="create-firm__actions">
                   <Button
+                    type="button"
                     variant="ghost"
                     onClick={() => navigate('/firms')}
+                    className="create-firm__action-btn create-firm__action-btn--cancel"
                   >
                     Cancel
                   </Button>
@@ -239,13 +279,14 @@ function CreateFirm() {
                     type="submit"
                     variant="primary"
                     loading={isLoading}
-                    disabled={!formData.firmName}
+                    disabled={!formData.firmName || isLoading}
+                    className="create-firm__action-btn create-firm__action-btn--submit"
                   >
-                    {isLoading ? 'Creating...' : 'Create Firm'}
+                    {isLoading ? 'Creating Firm...' : 'Create Firm'}
                   </Button>
                 </div>
               </form>
-            </Card>
+            </div>
           </div>
         </MainContent>
       </AppLayout>

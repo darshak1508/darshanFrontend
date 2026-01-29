@@ -1,5 +1,5 @@
 /**
- * Business Manager Dashboard
+ * Jay GuruDev Dashboard
  * Modern enterprise dashboard application
  */
 
