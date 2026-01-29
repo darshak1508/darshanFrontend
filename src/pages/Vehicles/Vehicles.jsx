@@ -151,25 +151,25 @@ function Vehicles() {
   // Validate form
   const validateForm = () => {
     const errors = {};
-    
+
     if (!formData.firmId) {
       errors.firmId = 'Please select a firm';
     }
-    
+
     if (!formData.vehicleNo || formData.vehicleNo.trim() === '') {
       errors.vehicleNo = 'Vehicle number is required';
     }
-    
+
     if (!formData.ownerName || formData.ownerName.trim() === '') {
       errors.ownerName = 'Owner name is required';
     }
-    
+
     if (!formData.driverNumber || formData.driverNumber.trim() === '') {
       errors.driverNumber = 'Driver phone is required';
     } else if (!/^\d{10}$/.test(formData.driverNumber.trim())) {
       errors.driverNumber = 'Please enter a valid 10-digit phone number';
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -391,17 +391,17 @@ function Vehicles() {
           className="modal-premium"
           footer={
             <div className="modal-premium__actions">
-              <Button 
-                variant="ghost" 
-                onClick={() => setIsModalOpen(false)} 
+              <Button
+                variant="ghost"
+                onClick={() => setIsModalOpen(false)}
                 className="modal-premium__btn-cancel"
                 disabled={isSaving}
               >
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
-                onClick={handleSave} 
+              <Button
+                variant="primary"
+                onClick={handleSave}
                 className="modal-premium__btn-submit"
                 disabled={isSaving}
               >
@@ -489,7 +489,7 @@ function Vehicles() {
                   <span className="input__error">{formErrors.firmId}</span>
                 )}
               </div>
-              
+
               <div className="input-group">
                 <label className="input__label">
                   <VehicleIcon size={14} />
@@ -515,7 +515,7 @@ function Vehicles() {
                   <span className="input__error">{formErrors.vehicleNo}</span>
                 )}
               </div>
-              
+
               <div className="input-group">
                 <label className="input__label">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -547,7 +547,7 @@ function Vehicles() {
                   <span className="input__error">{formErrors.ownerName}</span>
                 )}
               </div>
-              
+
               <div className="input-group">
                 <label className="input__label">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -580,13 +580,7 @@ function Vehicles() {
               </div>
             </div>
 
-            {/* Security Notice */}
-            <div className="form-security-notice">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              
-            </div>
+
           </div>
         </Modal>
       </AppLayout>
