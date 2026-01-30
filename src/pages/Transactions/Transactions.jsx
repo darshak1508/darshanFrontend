@@ -412,39 +412,93 @@ function Transactions() {
   };
 
   // Download PDF report
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!reportSettings.startDate || !reportSettings.endDate) {
       alert('Please select date range for the report');
       return;
     }
 
-    let url = `${API.TRANSACTION.REPORT_PDF}?startDate=${reportSettings.startDate}&endDate=${reportSettings.endDate}`;
+    try {
+      let url = `${API.TRANSACTION.REPORT_PDF}?startDate=${reportSettings.startDate}&endDate=${reportSettings.endDate}`;
 
-    if (reportSettings.firmId) {
-      url += `&firmId=${reportSettings.firmId}`;
+      if (reportSettings.firmId) {
+        url += `&firmId=${reportSettings.firmId}`;
+      }
+
+      if (reportSettings.useCustomPricing && reportSettings.roTonPrice && reportSettings.openTonPrice) {
+        url += `&roTonPrice=${reportSettings.roTonPrice}&openTonPrice=${reportSettings.openTonPrice}`;
+      }
+
+      // Fetch with authentication
+      const response = await apiCall(url.replace(API.BASE_URL, ''), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to download PDF');
+      }
+
+      // Convert response to blob and download
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `Transaction_Report_${reportSettings.startDate}_to_${reportSettings.endDate}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert(error.message || 'Failed to download PDF report');
     }
-
-    if (reportSettings.useCustomPricing && reportSettings.roTonPrice && reportSettings.openTonPrice) {
-      url += `&roTonPrice=${reportSettings.roTonPrice}&openTonPrice=${reportSettings.openTonPrice}`;
-    }
-
-    window.open(url, '_blank');
   };
 
   // Download Excel report
-  const handleDownloadExcel = () => {
+  const handleDownloadExcel = async () => {
     if (!reportSettings.startDate || !reportSettings.endDate) {
       alert('Please select date range for the report');
       return;
     }
 
-    let url = `${API.TRANSACTION.REPORT_EXCEL}?startDate=${reportSettings.startDate}&endDate=${reportSettings.endDate}`;
+    try {
+      let url = `${API.TRANSACTION.REPORT_EXCEL}?startDate=${reportSettings.startDate}&endDate=${reportSettings.endDate}`;
 
-    if (reportSettings.firmId) {
-      url += `&firmId=${reportSettings.firmId}`;
+      if (reportSettings.firmId) {
+        url += `&firmId=${reportSettings.firmId}`;
+      }
+
+      // Fetch with authentication
+      const response = await apiCall(url.replace(API.BASE_URL, ''), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to download Excel');
+      }
+
+      // Convert response to blob and download
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `Transaction_Report_${reportSettings.startDate}_to_${reportSettings.endDate}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
+      alert(error.message || 'Failed to download Excel report');
     }
-
-    window.open(url, '_blank');
   };
 
   return (
