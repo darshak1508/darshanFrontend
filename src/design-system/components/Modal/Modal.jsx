@@ -22,8 +22,9 @@ const Modal = ({
 }) => {
   const modalRef = useRef(null);
   const previousActiveElement = useRef(null);
+  const hasOpenedRef = useRef(false);
 
-  // Handle escape key
+  // Handle escape key and modal open/close
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -32,23 +33,32 @@ const Modal = ({
     };
 
     if (isOpen) {
-      previousActiveElement.current = document.activeElement;
+      // Only store previous element and focus modal when first opening
+      if (!hasOpenedRef.current) {
+        previousActiveElement.current = document.activeElement;
+        hasOpenedRef.current = true;
+        
+        // Focus the modal only on first open
+        setTimeout(() => {
+          modalRef.current?.focus();
+        }, 0);
+      }
+      
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
-      
-      // Focus the modal
-      setTimeout(() => {
-        modalRef.current?.focus();
-      }, 0);
+    } else {
+      // Reset when modal closes
+      hasOpenedRef.current = false;
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
       
-      // Return focus
-      if (previousActiveElement.current) {
+      // Return focus only when closing
+      if (!isOpen && previousActiveElement.current) {
         previousActiveElement.current.focus();
+        previousActiveElement.current = null;
       }
     };
   }, [isOpen, onClose]);
