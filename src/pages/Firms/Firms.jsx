@@ -78,6 +78,7 @@ function Firms() {
   // Modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingFirm, setEditingFirm] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     firmName: '',
     contactPerson: '',
@@ -139,6 +140,12 @@ function Firms() {
 
   // Handle update
   const handleUpdate = async () => {
+    if (!formData.firmName.trim()) {
+      alert('Firm name is required');
+      return;
+    }
+
+    setIsSaving(true);
     try {
       const response = await apiCall(`/firm/${editingFirm.id}`, {
         method: 'PUT',
@@ -161,6 +168,8 @@ function Firms() {
     } catch (error) {
       console.error('Error updating firm:', error);
       alert('Error updating firm');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -338,65 +347,206 @@ function Firms() {
           </Card>
         </MainContent>
 
-        {/* Edit Modal */}
+        {/* Edit Modal - Premium Design */}
         <Modal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          title="Edit Firm"
-          description="Update firm information"
+          title={null}
+          description={null}
+          showCloseButton={false}
           size="lg"
+          className="modal-premium"
           footer={
-            <>
-              <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+            <div className="modal-premium__actions">
+              <Button
+                variant="ghost"
+                onClick={() => setIsEditModalOpen(false)}
+                className="modal-premium__btn-cancel"
+                disabled={isSaving}
+              >
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleUpdate}>
-                Update Firm
+              <Button
+                variant="primary"
+                onClick={handleUpdate}
+                className="modal-premium__btn-submit"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <span className="btn-spinner"></span>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Update Firm
+                  </>
+                )}
               </Button>
-            </>
+            </div>
           }
         >
-          <div className="form-grid">
-            <div className="form-grid__row form-grid__row--2">
-              <Input
-                label="Firm Name"
-                value={formData.firmName}
-                onChange={(e) => setFormData({ ...formData, firmName: e.target.value })}
-                required
-                leftIcon={<BusinessIcon size={18} />}
-              />
-              <Input
-                label="Contact Person"
-                value={formData.contactPerson}
-                onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                leftIcon={<UserIcon size={18} />}
-              />
+          {/* Custom Premium Header */}
+          <div className="modal-premium__header">
+            <div className="modal-premium__header-content">
+              <div className="modal-premium__header-icon">
+                <BusinessIcon size={24} />
+              </div>
+              <div className="modal-premium__header-text">
+                <h2 className="modal-premium__title">Edit Firm</h2>
+                <p className="modal-premium__subtitle">Update business partner information</p>
+              </div>
             </div>
-            <Input
-              label="Address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              leftIcon={<MapPinIcon size={18} />}
-            />
-            <div className="form-grid__row form-grid__row--3">
-              <Input
-                label="City"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              />
-              <Input
-                label="Phone Number"
-                value={formData.phoneNumber}
-                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                leftIcon={<PhoneIcon size={18} />}
-              />
-              <Input
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                leftIcon={<MailIcon size={18} />}
-              />
+            <button
+              className="modal-premium__close"
+              onClick={() => setIsEditModalOpen(false)}
+              aria-label="Close modal"
+              disabled={isSaving}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div className="modal-premium__content">
+            {/* Info Banner */}
+            <div className="form-info-banner">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span>Update the information for this business partner. Firm name is required.</span>
+            </div>
+
+            <div className="form-grid">
+              {/* Basic Information Section */}
+              <div className="input-group">
+                <label className="input__label">
+                  <BusinessIcon size={14} />
+                  Firm Name <span className="required">*</span>
+                </label>
+                <div className="input__container input__container--with-icon">
+                  <div className="input__icon">
+                    <BusinessIcon size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    className="input__field input__field--with-icon"
+                    placeholder="Enter firm name"
+                    value={formData.firmName}
+                    onChange={(e) => setFormData({ ...formData, firmName: e.target.value })}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input__label">
+                  <UserIcon size={14} />
+                  Contact Person
+                </label>
+                <div className="input__container input__container--with-icon">
+                  <div className="input__icon">
+                    <UserIcon size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    className="input__field input__field--with-icon"
+                    placeholder="Contact person name"
+                    value={formData.contactPerson}
+                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              {/* Location Section */}
+              <div className="input-group">
+                <label className="input__label">
+                  <MapPinIcon size={14} />
+                  Address
+                </label>
+                <div className="input__container input__container--with-icon">
+                  <div className="input__icon">
+                    <MapPinIcon size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    className="input__field input__field--with-icon"
+                    placeholder="Street address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input__label">
+                  <MapPinIcon size={14} />
+                  City
+                </label>
+                <div className="input__container input__container--with-icon">
+                  <div className="input__icon">
+                    <MapPinIcon size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    className="input__field input__field--with-icon"
+                    placeholder="City name"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              {/* Contact Information Section */}
+              <div className="input-group">
+                <label className="input__label">
+                  <PhoneIcon size={14} />
+                  Phone Number
+                </label>
+                <div className="input__container input__container--with-icon">
+                  <div className="input__icon">
+                    <PhoneIcon size={18} />
+                  </div>
+                  <input
+                    type="tel"
+                    className="input__field input__field--with-icon"
+                    placeholder="Contact phone number"
+                    value={formData.phoneNumber}
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input__label">
+                  <MailIcon size={14} />
+                  Email Address
+                </label>
+                <div className="input__container input__container--with-icon">
+                  <div className="input__icon">
+                    <MailIcon size={18} />
+                  </div>
+                  <input
+                    type="email"
+                    className="input__field input__field--with-icon"
+                    placeholder="email@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </Modal>

@@ -84,20 +84,31 @@ function Vehicles() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Fetch vehicles
-  const fetchVehicles = async () => {
+  const fetchVehicles = async (firmsList = firms) => {
     setIsLoading(true);
     try {
       const response = await apiCall('/vehicle');
       if (response.ok) {
         const data = await response.json();
-        const transformedData = data.map((vehicle) => ({
-          id: vehicle.VehicleID,
-          vehicleNo: vehicle.VehicleNo,
-          driverNumber: vehicle.DriverNumber,
-          ownerName: vehicle.OwnerName,
-          firmId: vehicle.FirmID,
-          firmName: vehicle.Firm?.FirmName || '-',
-        }));
+        const transformedData = data.map((vehicle) => {
+          // Try to get firm name from nested Firm object first
+          let firmName = vehicle.Firm?.FirmName;
+          
+          // If not available, match from firms list using FirmID
+          if (!firmName && vehicle.FirmID && firmsList.length > 0) {
+            const matchedFirm = firmsList.find(f => f.id === vehicle.FirmID);
+            firmName = matchedFirm?.name;
+          }
+          
+          return {
+            id: vehicle.VehicleID,
+            vehicleNo: vehicle.VehicleNo,
+            driverNumber: vehicle.DriverNumber,
+            ownerName: vehicle.OwnerName,
+            firmId: vehicle.FirmID,
+            firmName: firmName || '-',
+          };
+        });
         setVehicles(transformedData);
       }
     } catch (error) {
@@ -113,16 +124,23 @@ function Vehicles() {
       const response = await apiCall('/firm');
       if (response.ok) {
         const data = await response.json();
-        setFirms(data.map(f => ({ id: f.FirmID, name: f.FirmName })));
+        const firmsList = data.map(f => ({ id: f.FirmID, name: f.FirmName }));
+        setFirms(firmsList);
+        return firmsList;
       }
     } catch (error) {
       console.error('Error fetching firms:', error);
     }
+    return [];
   };
 
   useEffect(() => {
-    fetchVehicles();
-    fetchFirms();
+    // Fetch firms first, then vehicles (so we can match firm names)
+    const loadData = async () => {
+      const firmsList = await fetchFirms();
+      await fetchVehicles(firmsList);
+    };
+    loadData();
   }, []);
 
   // Filter vehicles
@@ -199,7 +217,7 @@ function Vehicles() {
 
       if (response.ok) {
         setIsModalOpen(false);
-        fetchVehicles();
+        fetchVehicles(firms);
         // Reset form
         setFormData({ vehicleNo: '', driverNumber: '', ownerName: '', firmId: '' });
         setFormErrors({});
@@ -224,7 +242,7 @@ function Vehicles() {
         });
 
         if (response.ok) {
-          fetchVehicles();
+          fetchVehicles(firms);
         } else {
           alert('Failed to delete vehicle');
         }

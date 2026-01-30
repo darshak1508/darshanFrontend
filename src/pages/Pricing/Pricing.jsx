@@ -63,17 +63,60 @@ const navigationRoutes = [
 function Pricing() {
   const navigate = useNavigate();
   const [pricing, setPricing] = useState([]);
+  const [firms, setFirms] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch firms for matching
+  const fetchFirms = async () => {
+    try {
+      const response = await apiCall('/firm');
+      if (response.ok) {
+        const data = await response.json();
+        const firmsList = data.map(f => ({ id: f.FirmID, name: f.FirmName }));
+        setFirms(firmsList);
+        return firmsList;
+      }
+    } catch (error) {
+      console.error('Error fetching firms:', error);
+    }
+    return [];
+  };
+
   // Fetch pricing
-  const fetchPricing = async () => {
+  const fetchPricing = async (firmsList = firms) => {
     setIsLoading(true);
     try {
       const response = await apiCall('/pricing');
       if (response.ok) {
         const data = await response.json();
-        setPricing(data);
+        console.log('Raw pricing data from API:', data);
+        console.log('Firms list for matching:', firmsList);
+        
+        // Enrich pricing data with firm names if not already present
+        const enrichedData = data.map((price) => {
+          // If Firm data is already present, use it
+          if (price.Firm?.FirmName) {
+            return price;
+          }
+          
+          // Otherwise, match from firms list using FirmID
+          if (price.FirmID && firmsList.length > 0) {
+            const matchedFirm = firmsList.find(f => f.id === price.FirmID);
+            return {
+              ...price,
+              Firm: {
+                FirmName: matchedFirm?.name || 'Unknown Firm',
+                FirmID: price.FirmID
+              }
+            };
+          }
+          
+          return price;
+        });
+        
+        console.log('Enriched pricing data:', enrichedData);
+        setPricing(enrichedData);
       }
     } catch (error) {
       console.error('Error fetching pricing:', error);
@@ -83,7 +126,12 @@ function Pricing() {
   };
 
   useEffect(() => {
-    fetchPricing();
+    // Fetch firms first, then pricing
+    const loadData = async () => {
+      const firmsList = await fetchFirms();
+      await fetchPricing(firmsList);
+    };
+    loadData();
   }, []);
 
   // Handle delete
@@ -94,7 +142,7 @@ function Pricing() {
           method: 'DELETE',
         });
         if (response.ok) {
-          fetchPricing();
+          fetchPricing(firms);
         } else {
           alert('Failed to delete pricing');
         }
@@ -105,9 +153,14 @@ function Pricing() {
   };
 
   // Filter pricing
-  const filteredPricing = pricing.filter((price) =>
-    price.Firm?.FirmName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPricing = pricing.filter((price) => {
+    // If no search query, show all
+    if (!searchQuery) return true;
+    
+    // If there's a search query, try to match against firm name
+    const firmName = price.Firm?.FirmName || '';
+    return firmName.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   // Format date
   const formatDate = (dateString) => {

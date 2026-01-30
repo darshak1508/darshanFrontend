@@ -15,6 +15,7 @@ import { apiCall } from '../../utils/auth';
 import {
   AppLayout,
   MainContent,
+  MobileHeader,
   PageHeader,
   Sidebar,
   SidebarProvider,
@@ -165,7 +166,16 @@ function PriceEdit() {
     return (
       <SidebarProvider>
         <AppLayout>
-          <Sidebar brand="Jay GuruDev" brandIcon={<BusinessIcon size={20} />} routes={navigationRoutes} />
+          <MobileHeader 
+            brand="Jay GuruDev"
+            brandIcon={<BusinessIcon size={20} />}
+          />
+          <Sidebar 
+            brand="Jay GuruDev" 
+            brandIcon={<BusinessIcon size={20} />} 
+            routes={navigationRoutes}
+            footer={<UserProfile />}
+          />
           <MainContent>
             <div className="price-success">
               <div className="price-success__icon">
@@ -183,6 +193,10 @@ function PriceEdit() {
   return (
     <SidebarProvider>
       <AppLayout>
+        <MobileHeader 
+          brand="Jay GuruDev"
+          brandIcon={<BusinessIcon size={20} />}
+        />
         <Sidebar
           brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
