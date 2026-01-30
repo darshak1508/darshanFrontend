@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 // API Config
 import API from '../../config/api';
 import { apiCall } from '../../utils/auth';
+import { cachedApiCall } from '../../utils/cachedApiCall';
+import { formatDate } from '../../utils/dateFormatter';
 
 // Design System Components
 import {
@@ -70,7 +72,7 @@ function Pricing() {
   // Fetch firms for matching
   const fetchFirms = async () => {
     try {
-      const response = await apiCall('/firm');
+      const response = await cachedApiCall('/firm');
       if (response.ok) {
         const data = await response.json();
         const firmsList = data.map(f => ({ id: f.FirmID, name: f.FirmName }));
@@ -87,7 +89,7 @@ function Pricing() {
   const fetchPricing = async (firmsList = firms) => {
     setIsLoading(true);
     try {
-      const response = await apiCall('/pricing');
+      const response = await cachedApiCall('/pricing');
       if (response.ok) {
         const data = await response.json();
         console.log('Raw pricing data from API:', data);
@@ -161,16 +163,6 @@ function Pricing() {
     const firmName = price.Firm?.FirmName || '';
     return firmName.toLowerCase().includes(searchQuery.toLowerCase());
   });
-
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
 
   return (
     <SidebarProvider>

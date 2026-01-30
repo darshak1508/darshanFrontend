@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 // API Config
 import API from '../../config/api';
 import { apiCall } from '../../utils/auth';
+import { cachedApiCall } from '../../utils/cachedApiCall';
+import { formatDate, formatDateForInput } from '../../utils/dateFormatter';
 
 // Design System Components
 import {
@@ -101,6 +103,7 @@ function Transactions() {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [firms, setFirms] = useState([]);
+  const [allVehicles, setAllVehicles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
@@ -133,6 +136,7 @@ function Transactions() {
 
   // Edit modal state
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     FirmID: '',
     VehicleID: '',
@@ -144,41 +148,40 @@ function Transactions() {
   const [vehicles, setVehicles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
-  // Format date for input
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
-  };
-
   // Fetch firms
   const fetchFirms = async () => {
     try {
-      const response = await apiCall('/firm');
+      const response = await cachedApiCall('/firm');
       if (response.ok) {
         const data = await response.json();
         setFirms(data);
+        return data; // Return firms data for immediate use
       }
     } catch (error) {
       console.error('Error fetching firms:', error);
     }
+    return [];
+  };
+
+  // Fetch all vehicles
+  const fetchAllVehicles = async () => {
+    try {
+      const response = await cachedApiCall('/vehicle');
+      if (response.ok) {
+        const data = await response.json();
+        setAllVehicles(data);
+        return data;
+      }
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+    }
+    return [];
   };
 
   // Fetch vehicles by firm
   const fetchVehiclesByFirm = async (firmId) => {
     try {
-      const response = await apiCall(`/vehicle/byFirm/${firmId}`);
+      const response = await cachedApiCall(`/vehicle/byFirm/${firmId}`);
       if (response.ok) {
         const data = await response.json();
         setVehicles(data); // Changed from setFirmVehicles to setVehicles to match existing state
@@ -188,8 +191,8 @@ function Transactions() {
     }
   };
 
-  // Fetch transactions
-  const fetchTransactions = async () => {
+  // Fetch transactions (with forceRefresh option)
+  const fetchTransactions = async (firmsList = firms, vehiclesList = allVehicles, forceRefresh = false) => {
     setIsLoading(true);
     try {
       let url = '/transaction/all';
@@ -197,12 +200,30 @@ function Transactions() {
         url = `/transaction/by-firm/${filters.firmId}`;
       }
 
-      const response = await apiCall(url);
+      const cacheOptions = forceRefresh ? { forceRefresh: true } : {};
+      const response = await cachedApiCall(url, {}, cacheOptions);
 
       if (response.ok) {
         const data = await response.json();
         console.log('Transactions fetched:', data);
-        setTransactions(data);
+        
+        // Enrich transactions with firm and vehicle names
+        const enrichedTransactions = data.map(transaction => {
+          // Find the firm name by matching FirmID
+          const firm = firmsList.find(f => f.FirmID === transaction.FirmID);
+          // Find the vehicle by matching VehicleID
+          const vehicle = vehiclesList.find(v => v.VehicleID === transaction.VehicleID);
+          
+          return {
+            ...transaction,
+            // If Firm object doesn't exist, create it from the firms list
+            Firm: transaction.Firm || (firm ? { FirmName: firm.FirmName, FirmID: firm.FirmID } : null),
+            // If Vehicle object doesn't exist, create it from the vehicles list
+            Vehicle: transaction.Vehicle || (vehicle ? { VehicleNo: vehicle.VehicleNo, VehicleID: vehicle.VehicleID } : null)
+          };
+        });
+        
+        setTransactions(enrichedTransactions);
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -212,8 +233,27 @@ function Transactions() {
   };
 
   useEffect(() => {
-    fetchFirms();
-    fetchTransactions();
+    const loadData = async () => {
+      const firmsList = await fetchFirms(); // Wait for firms to load first
+      const vehiclesList = await fetchAllVehicles(); // Wait for vehicles to load
+      fetchTransactions(firmsList, vehiclesList, true); // Force refresh to get latest data
+    };
+    
+    loadData();
+    
+    // Listen for page visibility changes to refresh when user comes back
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to the page, fetch fresh data
+        loadData();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Apply filters
@@ -337,7 +377,8 @@ function Transactions() {
       if (response.ok) {
         setIsEditModalOpen(false);
         setEditingTransaction(null);
-        fetchTransactions();
+        // Force refresh to get updated data
+        fetchTransactions(firms, allVehicles, true);
       } else {
         const error = await response.json();
         alert(error.message || 'Failed to update transaction');
@@ -360,7 +401,8 @@ function Transactions() {
       });
 
       if (response.ok) {
-        fetchTransactions();
+        // Force refresh to get updated data
+        fetchTransactions(firms, allVehicles, true);
       } else {
         alert('Failed to delete transaction');
       }
@@ -447,8 +489,17 @@ function Transactions() {
           {showDownload && (
             <div className="trans-download-section">
               <div className="trans-download-section__header">
-                <h3><DownloadIcon size={20} /> Download Report</h3>
-                <p>Generate PDF or Excel reports with optional custom pricing</p>
+                <div>
+                  <h3><DownloadIcon size={20} /> Download Report</h3>
+                  <p>Generate PDF or Excel reports with optional custom pricing</p>
+                </div>
+                <button 
+                  className="trans-download-section__close"
+                  onClick={() => setShowDownload(false)}
+                  title="Close"
+                >
+                  <ClearIcon size={20} />
+                </button>
               </div>
 
               <div className="trans-download-section__body">

@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 // API Config
 import API from '../../config/api';
 import { apiCall } from '../../utils/auth';
+import { cachedApiCall } from '../../utils/cachedApiCall';
+import { formatDate } from '../../utils/dateFormatter';
 
 // Design System Components
 import {
@@ -105,20 +107,6 @@ const navigationRoutes = [
   },
 ];
 
-// Format date helper
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const time = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-
-  if (date.toDateString() === today.toDateString()) return `Today, ${time}`;
-  if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${time}`;
-  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + `, ${time}`;
-};
-
 function DashboardNew() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -131,20 +119,54 @@ function DashboardNew() {
   });
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [firms, setFirms] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [transactionsPerPage] = useState(5);
+  
+  // Filter state
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    firmId: '',
+    startDate: '',
+    endDate: '',
+    search: '',
+  });
 
-  // Fetch data
-  const fetchData = async () => {
+  // Fetch data (with forceRefresh option to get latest data)
+  const fetchData = async (forceRefresh = false) => {
     setIsRefreshing(true);
     try {
+      // Force refresh to get latest data (bypasses cache)
+      const cacheOptions = forceRefresh ? { forceRefresh: true } : {};
+      
+      // Fetch firms list first (for enrichment)
+      const firmsResponse = await cachedApiCall('/firm', {}, cacheOptions);
+      let firmsList = [];
+      if (firmsResponse.ok) {
+        firmsList = await firmsResponse.json();
+        setFirms(firmsList);
+      }
+
+      // Fetch vehicles list (for enrichment)
+      const vehiclesResponse = await cachedApiCall('/vehicle', {}, cacheOptions);
+      let vehiclesList = [];
+      if (vehiclesResponse.ok) {
+        vehiclesList = await vehiclesResponse.json();
+        setVehicles(vehiclesList);
+      }
+
       // Fetch firms count
-      const firmResponse = await apiCall('/firm/count/total');
+      const firmResponse = await cachedApiCall('/firm/count/total', {}, cacheOptions);
       if (firmResponse.ok) {
         const data = await firmResponse.json();
         setStats(prev => ({ ...prev, totalFirms: data.totalFirms || 0 }));
       }
 
       // Fetch today's stats
-      const todayResponse = await apiCall('/transaction/today/total');
+      const todayResponse = await cachedApiCall('/transaction/today/total', {}, cacheOptions);
       if (todayResponse.ok) {
         const data = await todayResponse.json();
         setStats(prev => ({
@@ -155,7 +177,7 @@ function DashboardNew() {
       }
 
       // Fetch today's tonnage
-      const tonnageResponse = await apiCall('/transaction/total-ton/today');
+      const tonnageResponse = await cachedApiCall('/transaction/total-ton/today', {}, cacheOptions);
       if (tonnageResponse.ok) {
         const data = await tonnageResponse.json();
         setStats(prev => ({
@@ -167,10 +189,27 @@ function DashboardNew() {
       }
 
       // Fetch recent transactions
-      const transResponse = await apiCall('/transaction/all');
+      const transResponse = await cachedApiCall('/transaction/all', {}, cacheOptions);
       if (transResponse.ok) {
         const data = await transResponse.json();
-        setRecentTransactions(data.slice(0, 5));
+        
+        // Enrich transactions with firm and vehicle names
+        const enrichedTransactions = data.map(transaction => {
+          const firm = firmsList.find(f => f.FirmID === transaction.FirmID);
+          const vehicle = vehiclesList.find(v => v.VehicleID === transaction.VehicleID);
+          
+          return {
+            ...transaction,
+            Firm: transaction.Firm || (firm ? { FirmName: firm.FirmName, FirmID: firm.FirmID } : null),
+            Vehicle: transaction.Vehicle || (vehicle ? { VehicleNo: vehicle.VehicleNo, VehicleID: vehicle.VehicleID } : null)
+          };
+        });
+        
+        // Sort by date (most recent first) and store all transactions
+        const sortedTransactions = enrichedTransactions.sort((a, b) => 
+          new Date(b.TransactionDate) - new Date(a.TransactionDate)
+        );
+        setRecentTransactions(sortedTransactions);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -178,11 +217,83 @@ function DashboardNew() {
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
+  // Filter transactions
+  const filteredTransactions = recentTransactions.filter((t) => {
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      const matchesSearch =
+        t.Firm?.FirmName?.toLowerCase().includes(searchLower) ||
+        t.Vehicle?.VehicleNo?.toLowerCase().includes(searchLower) ||
+        String(t.RoNumber || '').toLowerCase().includes(searchLower) ||
+        String(t.TransactionID || '').includes(searchLower);
+      if (!matchesSearch) return false;
+    }
+
+    if (filters.firmId) {
+      if (String(t.FirmID) !== filters.firmId) return false;
+    }
+
+    if (filters.startDate) {
+      const transDate = new Date(t.TransactionDate);
+      const startDate = new Date(filters.startDate);
+      startDate.setHours(0, 0, 0, 0);
+      if (transDate < startDate) return false;
+    }
+
+    if (filters.endDate) {
+      const transDate = new Date(t.TransactionDate);
+      const endDate = new Date(filters.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      if (transDate > endDate) return false;
+    }
+
+    return true;
+  });
+
+  // Pagination logic
+  const indexOfLastTransaction = currentPage * transactionsPerPage;
+  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+  const currentTransactions = filteredTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
+  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const clearFilters = () => {
+    setFilters({ firmId: '', startDate: '', endDate: '', search: '' });
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = filters.search || filters.firmId || filters.startDate || filters.endDate;
+
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    // Force refresh on initial load to get latest data
+    fetchData(true);
+    
+    // Auto-refresh every 5 minutes with cache bypass
+    const interval = setInterval(() => fetchData(true), 5 * 60 * 1000);
+    
+    // Listen for page visibility changes to refresh when user comes back
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to the page, fetch fresh data
+        fetchData(true);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.firmId, filters.startDate, filters.endDate, filters.search]);
 
   return (
     <SidebarProvider>
@@ -283,20 +394,92 @@ function DashboardNew() {
               <div className="dashboard-card__header">
                 <div>
                   <h2 className="dashboard-card__title">Recent Transactions</h2>
-                  <p className="dashboard-card__subtitle">Latest business activity</p>
+                  <p className="dashboard-card__subtitle">
+                    {hasActiveFilters 
+                      ? `${filteredTransactions.length} filtered transaction${filteredTransactions.length !== 1 ? 's' : ''}`
+                      : 'Latest business activity'
+                    }
+                  </p>
                 </div>
-                <button
-                  className="dashboard-card__link"
-                  onClick={() => navigate('/transactions')}
-                >
-                  View All <Icons.ArrowRight />
-                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    className={`dashboard-filter-toggle ${showFilters ? 'dashboard-filter-toggle--active' : ''}`}
+                    onClick={() => setShowFilters(!showFilters)}
+                    title="Toggle filters"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+                    </svg>
+                    {hasActiveFilters && <span className="dashboard-filter-badge"></span>}
+                  </button>
+                  <button
+                    className="dashboard-card__link"
+                    onClick={() => navigate('/transactions')}
+                  >
+                    View All <Icons.ArrowRight />
+                  </button>
+                </div>
               </div>
 
+              {/* Filters Section */}
+              {showFilters && (
+                <div className="dashboard-filters">
+                  <div className="dashboard-filters__row">
+                    <div className="dashboard-filter-field">
+                      <label>Search</label>
+                      <input
+                        type="text"
+                        placeholder="Search transactions..."
+                        value={filters.search}
+                        onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                      />
+                    </div>
+                    <div className="dashboard-filter-field">
+                      <label>Firm</label>
+                      <select
+                        value={filters.firmId}
+                        onChange={(e) => setFilters(prev => ({ ...prev, firmId: e.target.value }))}
+                      >
+                        <option value="">All Firms</option>
+                        {firms.map(firm => (
+                          <option key={firm.FirmID} value={firm.FirmID}>{firm.FirmName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="dashboard-filter-field">
+                      <label>From Date</label>
+                      <input
+                        type="date"
+                        value={filters.startDate}
+                        onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                      />
+                    </div>
+                    <div className="dashboard-filter-field">
+                      <label>To Date</label>
+                      <input
+                        type="date"
+                        value={filters.endDate}
+                        onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  {hasActiveFilters && (
+                    <button className="dashboard-filters__clear" onClick={clearFilters}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div className="dashboard-card__body">
-                {recentTransactions.length > 0 ? (
-                  <div className="transaction-list">
-                    {recentTransactions.map((t) => (
+                {currentTransactions.length > 0 ? (
+                  <>
+                    <div className="transaction-list">
+                      {currentTransactions.map((t) => (
                       <div key={t.TransactionID} className="transaction-item">
                         <div className="transaction-item__avatar">
                           <Icons.Receipt />
@@ -314,16 +497,58 @@ function DashboardNew() {
                       </div>
                     ))}
                   </div>
+                  
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="dashboard-pagination">
+                      <button
+                        className="dashboard-pagination__btn"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
+                      
+                      <div className="dashboard-pagination__pages">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <button
+                            key={page}
+                            className={`dashboard-pagination__page ${currentPage === page ? 'dashboard-pagination__page--active' : ''}`}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+                      
+                      <button
+                        className="dashboard-pagination__btn"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                      
+                      <span className="dashboard-pagination__info">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                    </div>
+                  )}
+                </>
                 ) : (
                   <div className="dashboard-empty">
                     <Icons.Receipt />
-                    <p>No transactions yet</p>
+                    <p>{hasActiveFilters ? 'No transactions match your filters' : 'No transactions yet'}</p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => navigate('/transactions/new')}
+                      onClick={() => hasActiveFilters ? clearFilters() : navigate('/transactions/new')}
                     >
-                      Create First Transaction
+                      {hasActiveFilters ? 'Clear Filters' : 'Create First Transaction'}
                     </Button>
                   </div>
                 )}

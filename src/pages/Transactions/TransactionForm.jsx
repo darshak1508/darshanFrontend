@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 // API Config
 import API from '../../config/api';
 import { apiCall } from '../../utils/auth';
+import { cachedApiCall } from '../../utils/cachedApiCall';
+import { formatDate } from '../../utils/dateFormatter';
 
 // Design System Components
 import {
@@ -63,6 +65,10 @@ function TransactionForm() {
   const [pricing, setPricing] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+  const [vehiclesLoading, setVehiclesLoading] = useState(false);
+  const [pricingLoading, setPricingLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     firmId: '',
@@ -85,10 +91,17 @@ function TransactionForm() {
   useEffect(() => {
     const fetchFirms = async () => {
       try {
-        const response = await apiCall('/firm');
+        const response = await cachedApiCall('/firm');
         if (response.ok) {
           const data = await response.json();
-          setFirms(data);
+          // Normalize firm data to have consistent id/name properties
+          const normalizedFirms = data.map(f => ({
+            id: f.FirmID,
+            name: f.FirmName,
+            FirmID: f.FirmID, // Keep original for backwards compatibility
+            FirmName: f.FirmName
+          }));
+          setFirms(normalizedFirms);
         }
       } catch (error) {
         console.error('Error fetching firms:', error);
@@ -107,10 +120,21 @@ function TransactionForm() {
 
       setVehiclesLoading(true);
       try {
-        const response = await apiCall(`/vehicle/byFirm/${formData.firmId}`);
+        const response = await cachedApiCall(`/vehicle/byFirm/${formData.firmId}`);
         if (response.ok) {
           const data = await response.json();
-          setVehicles(data);
+          // Normalize vehicle data
+          const normalizedVehicles = data.map(v => ({
+            id: v.VehicleID,
+            vehicleNo: v.VehicleNo,
+            driverNumber: v.DriverNumber,
+            ownerName: v.OwnerName,
+            firmId: v.FirmID,
+            VehicleID: v.VehicleID, // Keep original for backwards compatibility
+            VehicleNo: v.VehicleNo,
+            FirmID: v.FirmID
+          }));
+          setVehicles(normalizedVehicles);
         }
       } catch (error) {
         console.error('Error fetching vehicles:', error);
@@ -118,7 +142,19 @@ function TransactionForm() {
           const allResponse = await apiCall('/vehicle');
           if (allResponse.ok) {
             const allData = await allResponse.json();
-            setVehicles(allData.filter(v => v.FirmID?.toString() === formData.firmId));
+            const filteredData = allData.filter(v => v.FirmID?.toString() === formData.firmId);
+            // Normalize filtered vehicle data
+            const normalizedVehicles = filteredData.map(v => ({
+              id: v.VehicleID,
+              vehicleNo: v.VehicleNo,
+              driverNumber: v.DriverNumber,
+              ownerName: v.OwnerName,
+              firmId: v.FirmID,
+              VehicleID: v.VehicleID,
+              VehicleNo: v.VehicleNo,
+              FirmID: v.FirmID
+            }));
+            setVehicles(normalizedVehicles);
           }
         } catch (err) {
           console.error('Error fetching all vehicles:', err);
@@ -230,8 +266,8 @@ function TransactionForm() {
     }
   };
 
-  const selectedFirm = firms.find(f => f.id.toString() === formData.firmId);
-  const selectedVehicle = vehicles.find(v => v.id.toString() === formData.vehicleId);
+  const selectedFirm = firms.find(f => f?.id?.toString() === formData.firmId);
+  const selectedVehicle = vehicles.find(v => v?.id?.toString() === formData.vehicleId);
 
   const canProceed = step === 1
     ? formData.firmId && formData.vehicleId && formData.roNumber
@@ -283,6 +319,23 @@ function TransactionForm() {
                 </div>
               </div>
             </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="alert alert--error" style={{ marginTop: '1.5rem' }}>
+                <span className="alert__icon">⚠️</span>
+                <span className="alert__message">{error}</span>
+                <button className="alert__close" onClick={() => setError(null)}>×</button>
+              </div>
+            )}
+
+            {/* Success Display */}
+            {success && (
+              <div className="alert alert--success" style={{ marginTop: '1.5rem' }}>
+                <span className="alert__icon">✓</span>
+                <span className="alert__message">Transaction created successfully! Redirecting...</span>
+              </div>
+            )}
 
             <div className="transaction-content">
               {/* Main Form */}
@@ -529,9 +582,7 @@ function TransactionForm() {
                     <div className="summary-item">
                       <span className="summary-item__label">Date</span>
                       <span className="summary-item__value">
-                        {formData.transactionDate ? new Date(formData.transactionDate).toLocaleDateString('en-IN', {
-                          day: '2-digit', month: 'short', year: 'numeric'
-                        }) : '—'}
+                        {formatDate(formData.transactionDate)}
                       </span>
                     </div>
                   </div>

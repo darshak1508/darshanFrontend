@@ -22,6 +22,9 @@
 }
 
 .trans-download-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   padding: var(--space-5, 20px);
   background: linear-gradient(135deg, var(--color-brand-50, #ecfeff) 0%, var(--color-violet-50, #f5f3ff) 100%);
   border-bottom: 1px solid var(--border-subtle, #f3f4f6);
@@ -41,6 +44,26 @@
   font-size: 13px;
   color: var(--text-secondary, #6b7280);
   margin: 0;
+}
+
+.trans-download-section__close {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: var(--radius-lg, 12px);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary, #6b7280);
+  transition: all 200ms ease;
+  flex-shrink: 0;
+}
+
+.trans-download-section__close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-primary, #111827);
 }
 
 .trans-download-section__body {

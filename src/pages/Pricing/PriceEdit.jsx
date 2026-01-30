@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 // API Config
 import API from '../../config/api';
 import { apiCall } from '../../utils/auth';
+import { cachedApiCall } from '../../utils/cachedApiCall';
 
 // Design System Components
 import {
@@ -77,7 +78,7 @@ function PriceEdit() {
   useEffect(() => {
     const fetchFirms = async () => {
       try {
-        const response = await apiCall('/firm');
+        const response = await cachedApiCall('/firm');
         if (response.ok) {
           const data = await response.json();
           setFirms(data.map(f => ({ id: f.FirmID, name: f.FirmName })));
@@ -95,7 +96,7 @@ function PriceEdit() {
       if (isNew || !firmId) return;
 
       try {
-        const response = await apiCall('/pricing');
+        const response = await cachedApiCall('/pricing');
         if (response.ok) {
           const allPricing = await response.json();
           const data = allPricing.find(p => p.FirmID?.toString() === firmId);

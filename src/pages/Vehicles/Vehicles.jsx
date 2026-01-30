@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 // API Config
 import API from '../../config/api';
 import { apiCall } from '../../utils/auth';
+import { cachedApiCall } from '../../utils/cachedApiCall';
 
 // Design System Components
 import {
@@ -87,7 +88,7 @@ function Vehicles() {
   const fetchVehicles = async (firmsList = firms) => {
     setIsLoading(true);
     try {
-      const response = await apiCall('/vehicle');
+      const response = await cachedApiCall('/vehicle');
       if (response.ok) {
         const data = await response.json();
         const transformedData = data.map((vehicle) => {
@@ -121,7 +122,7 @@ function Vehicles() {
   // Fetch firms for dropdown
   const fetchFirms = async () => {
     try {
-      const response = await apiCall('/firm');
+      const response = await cachedApiCall('/firm');
       if (response.ok) {
         const data = await response.json();
         const firmsList = data.map(f => ({ id: f.FirmID, name: f.FirmName }));

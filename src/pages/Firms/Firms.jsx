@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 // API Config
 import API from '../../config/api';
 import { apiCall } from '../../utils/auth';
+import { cachedApiCall } from '../../utils/cachedApiCall';
 
 // Design System Components
 import {
@@ -92,7 +93,7 @@ function Firms() {
   const fetchFirms = async () => {
     setIsLoading(true);
     try {
-      const response = await apiCall('/firm');
+      const response = await cachedApiCall('/firm');
       if (response.ok) {
         const data = await response.json();
         const transformedData = data.map((firm) => ({
