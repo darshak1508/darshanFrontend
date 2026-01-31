@@ -524,7 +524,7 @@ function TransactionForm() {
                           <div className="tonnage-operator">+</div>
 
                           <div className="tonnage-field">
-                            <label className="tonnage-label">Open Tonnage</label>
+                            <label className="tonnage-label">Over Tonnage</label>
                             <div className="tonnage-input-wrapper tonnage-input-wrapper--open">
                               <input
                                 type="text"
@@ -595,7 +595,7 @@ function TransactionForm() {
                       <span>{formData.roTon || '0'} T</span>
                     </div>
                     <div className="summary-row">
-                      <span>Open Tonnage</span>
+                      <span>Over Tonnage</span>
                       <span>{calculated.openTon} T</span>
                     </div>
                     <div className="summary-row summary-row--highlight">

@@ -94,14 +94,14 @@ function Pricing() {
         const data = await response.json();
         console.log('Raw pricing data from API:', data);
         console.log('Firms list for matching:', firmsList);
-        
+
         // Enrich pricing data with firm names if not already present
         const enrichedData = data.map((price) => {
           // If Firm data is already present, use it
           if (price.Firm?.FirmName) {
             return price;
           }
-          
+
           // Otherwise, match from firms list using FirmID
           if (price.FirmID && firmsList.length > 0) {
             const matchedFirm = firmsList.find(f => f.id === price.FirmID);
@@ -113,10 +113,10 @@ function Pricing() {
               }
             };
           }
-          
+
           return price;
         });
-        
+
         console.log('Enriched pricing data:', enrichedData);
         setPricing(enrichedData);
       }
@@ -158,7 +158,7 @@ function Pricing() {
   const filteredPricing = pricing.filter((price) => {
     // If no search query, show all
     if (!searchQuery) return true;
-    
+
     // If there's a search query, try to match against firm name
     const firmName = price.Firm?.FirmName || '';
     return firmName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -167,7 +167,7 @@ function Pricing() {
   return (
     <SidebarProvider>
       <AppLayout>
-        <MobileHeader 
+        <MobileHeader
           brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
         />
@@ -269,7 +269,7 @@ function Pricing() {
                       </div>
                       <div className="pricing-card__rate-divider"></div>
                       <div className="pricing-card__rate">
-                        <span className="pricing-card__rate-label">Open Price</span>
+                        <span className="pricing-card__rate-label">Over Price</span>
                         <span className="pricing-card__rate-value pricing-card__rate-value--open">
                           ₹{Number(price.OpenTonPrice || 0).toLocaleString('en-IN')}
                           <small>/ton</small>

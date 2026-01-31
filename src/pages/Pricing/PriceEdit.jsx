@@ -167,13 +167,13 @@ function PriceEdit() {
     return (
       <SidebarProvider>
         <AppLayout>
-          <MobileHeader 
+          <MobileHeader
             brand="Jay GuruDev"
             brandIcon={<BusinessIcon size={20} />}
           />
-          <Sidebar 
-            brand="Jay GuruDev" 
-            brandIcon={<BusinessIcon size={20} />} 
+          <Sidebar
+            brand="Jay GuruDev"
+            brandIcon={<BusinessIcon size={20} />}
             routes={navigationRoutes}
             footer={<UserProfile />}
           />
@@ -194,7 +194,7 @@ function PriceEdit() {
   return (
     <SidebarProvider>
       <AppLayout>
-        <MobileHeader 
+        <MobileHeader
           brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
         />
@@ -285,7 +285,7 @@ function PriceEdit() {
                     </div>
 
                     <div className="price-edit-rate">
-                      <label className="price-edit-rate__label">Open Ton Price</label>
+                      <label className="price-edit-rate__label">Over Ton Price</label>
                       <div className="price-edit-rate__input-wrapper price-edit-rate__input-wrapper--open">
                         <span className="price-edit-rate__currency">₹</span>
                         <input
@@ -348,7 +348,7 @@ function PriceEdit() {
 
                   <div className="price-preview-rate">
                     <div className="price-preview-rate__header">
-                      <span className="price-preview-rate__label">Open Tonnage</span>
+                      <span className="price-preview-rate__label">Over Tonnage</span>
                       <span className="price-preview-rate__badge price-preview-rate__badge--open">Open</span>
                     </div>
                     <div className="price-preview-rate__calc">

@@ -206,14 +206,14 @@ function Transactions() {
       if (response.ok) {
         const data = await response.json();
         console.log('Transactions fetched:', data);
-        
+
         // Enrich transactions with firm and vehicle names
         const enrichedTransactions = data.map(transaction => {
           // Find the firm name by matching FirmID
           const firm = firmsList.find(f => f.FirmID === transaction.FirmID);
           // Find the vehicle by matching VehicleID
           const vehicle = vehiclesList.find(v => v.VehicleID === transaction.VehicleID);
-          
+
           return {
             ...transaction,
             // If Firm object doesn't exist, create it from the firms list
@@ -222,7 +222,7 @@ function Transactions() {
             Vehicle: transaction.Vehicle || (vehicle ? { VehicleNo: vehicle.VehicleNo, VehicleID: vehicle.VehicleID } : null)
           };
         });
-        
+
         setTransactions(enrichedTransactions);
       }
     } catch (error) {
@@ -238,9 +238,9 @@ function Transactions() {
       const vehiclesList = await fetchAllVehicles(); // Wait for vehicles to load
       fetchTransactions(firmsList, vehiclesList, true); // Force refresh to get latest data
     };
-    
+
     loadData();
-    
+
     // Listen for page visibility changes to refresh when user comes back
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -248,9 +248,9 @@ function Transactions() {
         loadData();
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
@@ -504,7 +504,7 @@ function Transactions() {
   return (
     <SidebarProvider>
       <AppLayout>
-        <MobileHeader 
+        <MobileHeader
           brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
         />
@@ -547,7 +547,7 @@ function Transactions() {
                   <h3><DownloadIcon size={20} /> Download Report</h3>
                   <p>Generate PDF or Excel reports with optional custom pricing</p>
                 </div>
-                <button 
+                <button
                   className="trans-download-section__close"
                   onClick={() => setShowDownload(false)}
                   title="Close"
@@ -624,12 +624,12 @@ function Transactions() {
                         />
                       </div>
                       <div className="trans-filter-field">
-                        <label className="trans-filter-field__label">Open Ton Price (₹)</label>
+                        <label className="trans-filter-field__label">Over Ton Price (₹)</label>
                         <input
                           type="number"
                           step="0.01"
                           className="trans-filter-field__input"
-                          placeholder="Enter custom Open price"
+                          placeholder="Enter custom Over price"
                           value={reportSettings.openTonPrice}
                           onChange={(e) => setReportSettings(prev => ({ ...prev, openTonPrice: e.target.value }))}
                         />
@@ -857,7 +857,7 @@ function Transactions() {
                       </div>
                       <div className="trans-card__weight-divider"></div>
                       <div className="trans-card__weight">
-                        <span className="trans-card__weight-label">Open Ton</span>
+                        <span className="trans-card__weight-label">Over Ton</span>
                         <span className="trans-card__weight-value trans-card__weight-value--open">{Number(t.OpenTon || 0).toFixed(2)} T</span>
                       </div>
                     </div>
