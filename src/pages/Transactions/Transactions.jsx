@@ -36,6 +36,7 @@ import {
   SearchIcon,
   EditIcon,
   TrashIcon,
+  NoteIcon,
 } from '../../design-system/icons';
 
 // Styles
@@ -95,6 +96,7 @@ const navigationRoutes = [
     items: [
       { key: 'pricing', name: 'Pricing', route: '/pricing', icon: <PaymentIcon size={18} /> },
       { key: 'transactions', name: 'Transactions', route: '/transactions', icon: <ReceiptIcon size={18} /> },
+      { key: 'notes', name: 'Notes', route: '/notes', icon: <NoteIcon size={18} /> },
     ],
   },
 ];

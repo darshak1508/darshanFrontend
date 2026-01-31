@@ -40,6 +40,7 @@ import {
   EditIcon,
   TrashIcon,
   SearchIcon,
+  NoteIcon,
 } from '../../design-system/icons';
 
 // Styles
@@ -61,6 +62,7 @@ const navigationRoutes = [
     items: [
       { key: 'pricing', name: 'Pricing', route: '/pricing', icon: <PaymentIcon size={18} /> },
       { key: 'transactions', name: 'Transactions', route: '/transactions', icon: <ReceiptIcon size={18} /> },
+      { key: 'notes', name: 'Notes', route: '/notes', icon: <NoteIcon size={18} /> },
     ],
   },
 ];
@@ -94,13 +96,13 @@ function Vehicles() {
         const transformedData = data.map((vehicle) => {
           // Try to get firm name from nested Firm object first
           let firmName = vehicle.Firm?.FirmName;
-          
+
           // If not available, match from firms list using FirmID
           if (!firmName && vehicle.FirmID && firmsList.length > 0) {
             const matchedFirm = firmsList.find(f => f.id === vehicle.FirmID);
             firmName = matchedFirm?.name;
           }
-          
+
           return {
             id: vehicle.VehicleID,
             vehicleNo: vehicle.VehicleNo,
@@ -320,7 +322,7 @@ function Vehicles() {
   return (
     <SidebarProvider>
       <AppLayout>
-        <MobileHeader 
+        <MobileHeader
           brand="Jay GuruDev"
           brandIcon={<BusinessIcon size={20} />}
         />

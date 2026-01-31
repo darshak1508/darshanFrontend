@@ -16,6 +16,7 @@ import Pricing from './pages/Pricing';
 import PriceEdit from './pages/Pricing/PriceEdit';
 import Transactions from './pages/Transactions';
 import TransactionForm from './pages/Transactions/TransactionForm';
+import Notes from './pages/Notes/Notes';
 
 // Authentication Pages
 import { Login, Register } from './pages/Auth';
@@ -27,6 +28,7 @@ import {
   VehicleIcon,
   PaymentIcon,
   ReceiptIcon,
+  NoteIcon,
 } from './design-system/icons';
 
 const routes = [
@@ -123,6 +125,14 @@ const routes = [
     route: '/transactions/new',
     component: <TransactionForm />,
     hidden: true,
+  },
+  {
+    type: 'collapse',
+    name: 'Notes',
+    key: 'notes',
+    icon: <NoteIcon size={18} />,
+    route: '/notes',
+    component: <Notes />,
   },
 ];
 

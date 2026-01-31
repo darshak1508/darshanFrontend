@@ -497,7 +497,9 @@
 }
 
 @keyframes trans-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -506,7 +508,7 @@
 .trans-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4, 16px);
+  gap: 8px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -530,7 +532,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4, 16px) var(--space-5, 20px);
+  padding: 8px 16px;
   background: var(--bg-secondary, #f9fafb);
   border-bottom: 1px solid var(--border-subtle, #f3f4f6);
 }
@@ -542,8 +544,8 @@
 }
 
 .trans-card__firm-avatar {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -558,7 +560,7 @@
 }
 
 .trans-card__firm-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary, #111827);
   margin: 0;
@@ -567,7 +569,7 @@
 .trans-card__firm-id {
   font-size: 12px;
   color: var(--text-tertiary, #9ca3af);
-  margin-top: 2px;
+  margin-top: 0;
   font-family: var(--font-mono, monospace);
 }
 
@@ -578,9 +580,9 @@
 }
 
 .trans-card__date {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text-secondary, #6b7280);
-  padding: 6px 12px;
+  padding: 4px 8px;
   background: var(--bg-primary, #ffffff);
   border-radius: var(--radius-lg, 12px);
   border: 1px solid var(--border-subtle, #f3f4f6);
@@ -592,8 +594,8 @@
 }
 
 .trans-card__action {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -620,20 +622,20 @@
 
 /* Card Body */
 .trans-card__body {
-  padding: var(--space-5, 20px);
+  padding: 8px 16px;
 }
 
 .trans-card__row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4, 16px);
-  margin-bottom: var(--space-5, 20px);
+  margin-bottom: 8px;
 }
 
 .trans-card__detail {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
 }
 
 .trans-card__detail-label {
@@ -654,7 +656,7 @@
 .trans-card__weights {
   display: flex;
   align-items: center;
-  padding: var(--space-4, 16px);
+  padding: 8px;
   background: var(--bg-tertiary, #f3f4f6);
   border-radius: var(--radius-xl, 16px);
 }
@@ -673,11 +675,11 @@
   color: var(--text-tertiary, #9ca3af);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .trans-card__weight-value {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--text-primary, #111827);
   letter-spacing: -0.01em;
@@ -703,7 +705,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4, 16px) var(--space-5, 20px);
+  padding: 8px 16px;
   background: linear-gradient(135deg, var(--color-success-50, #f0fdf4) 0%, var(--color-success-100, #dcfce7) 100%);
   border-top: 1px solid var(--color-success-200, #bbf7d0);
 }
@@ -717,7 +719,7 @@
 }
 
 .trans-card__amount {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--color-success-700, #15803d);
   letter-spacing: -0.02em;
@@ -864,71 +866,71 @@
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .trans-search {
     max-width: none;
   }
-  
+
   .trans-filter-toggle {
     justify-content: center;
   }
-  
+
   .trans-card__header {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3, 12px);
   }
-  
+
   .trans-card__date {
     align-self: flex-start;
   }
-  
+
   .trans-card__row {
     grid-template-columns: 1fr;
   }
-  
+
   .trans-card__weights {
     flex-direction: column;
     gap: var(--space-3, 12px);
   }
-  
+
   .trans-card__weight-divider {
     width: 100%;
     height: 1px;
     margin: 0;
   }
-  
+
   .trans-card__footer {
     flex-direction: column;
     gap: var(--space-2, 8px);
     text-align: center;
   }
-  
+
   .trans-filters__quick {
     justify-content: center;
   }
-  
+
   .trans-filters__clear-btn {
     margin-left: 0;
     margin-top: var(--space-2, 8px);
     width: 100%;
     justify-content: center;
   }
-  
+
   .trans-header-actions {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .trans-header-actions .btn {
     width: 100%;
     justify-content: center;
   }
-  
+
   .trans-download-section__actions {
     flex-direction: column;
   }
-  
+
   .trans-download-btn {
     justify-content: center;
   }

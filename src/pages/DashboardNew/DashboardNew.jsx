@@ -86,6 +86,15 @@ const Icons = {
       <path d="M5 12h14m-7-7l7 7-7 7" />
     </svg>
   ),
+  Note: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  ),
 };
 
 // Navigation routes
@@ -103,6 +112,7 @@ const navigationRoutes = [
     items: [
       { key: 'pricing', name: 'Pricing', route: '/pricing', icon: <Icons.Payment /> },
       { key: 'transactions', name: 'Transactions', route: '/transactions', icon: <Icons.Receipt /> },
+      { key: 'notes', name: 'Notes', route: '/notes', icon: <Icons.Note /> },
     ],
   },
 ];
@@ -121,11 +131,11 @@ function DashboardNew() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [firms, setFirms] = useState([]);
   const [vehicles, setVehicles] = useState([]);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [transactionsPerPage] = useState(5);
-  
+
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -141,7 +151,7 @@ function DashboardNew() {
     try {
       // Force refresh to get latest data (bypasses cache)
       const cacheOptions = forceRefresh ? { forceRefresh: true } : {};
-      
+
       // Fetch firms list first (for enrichment)
       const firmsResponse = await cachedApiCall('/firm', {}, cacheOptions);
       let firmsList = [];
@@ -192,21 +202,21 @@ function DashboardNew() {
       const transResponse = await cachedApiCall('/transaction/all', {}, cacheOptions);
       if (transResponse.ok) {
         const data = await transResponse.json();
-        
+
         // Enrich transactions with firm and vehicle names
         const enrichedTransactions = data.map(transaction => {
           const firm = firmsList.find(f => f.FirmID === transaction.FirmID);
           const vehicle = vehiclesList.find(v => v.VehicleID === transaction.VehicleID);
-          
+
           return {
             ...transaction,
             Firm: transaction.Firm || (firm ? { FirmName: firm.FirmName, FirmID: firm.FirmID } : null),
             Vehicle: transaction.Vehicle || (vehicle ? { VehicleNo: vehicle.VehicleNo, VehicleID: vehicle.VehicleID } : null)
           };
         });
-        
+
         // Sort by date (most recent first) and store all transactions
-        const sortedTransactions = enrichedTransactions.sort((a, b) => 
+        const sortedTransactions = enrichedTransactions.sort((a, b) =>
           new Date(b.TransactionDate) - new Date(a.TransactionDate)
         );
         setRecentTransactions(sortedTransactions);
@@ -270,10 +280,10 @@ function DashboardNew() {
   useEffect(() => {
     // Force refresh on initial load to get latest data
     fetchData(true);
-    
+
     // Auto-refresh every 5 minutes with cache bypass
     const interval = setInterval(() => fetchData(true), 5 * 60 * 1000);
-    
+
     // Listen for page visibility changes to refresh when user comes back
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -281,9 +291,9 @@ function DashboardNew() {
         fetchData(true);
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -298,7 +308,7 @@ function DashboardNew() {
   return (
     <SidebarProvider>
       <AppLayout>
-        <MobileHeader 
+        <MobileHeader
           brand="Jay GuruDev"
           brandIcon={<Icons.Business />}
         />
@@ -395,7 +405,7 @@ function DashboardNew() {
                 <div>
                   <h2 className="dashboard-card__title">Recent Transactions</h2>
                   <p className="dashboard-card__subtitle">
-                    {hasActiveFilters 
+                    {hasActiveFilters
                       ? `${filteredTransactions.length} filtered transaction${filteredTransactions.length !== 1 ? 's' : ''}`
                       : 'Latest business activity'
                     }
@@ -480,65 +490,65 @@ function DashboardNew() {
                   <>
                     <div className="transaction-list">
                       {currentTransactions.map((t) => (
-                      <div key={t.TransactionID} className="transaction-item">
-                        <div className="transaction-item__avatar">
-                          <Icons.Receipt />
+                        <div key={t.TransactionID} className="transaction-item">
+                          <div className="transaction-item__avatar">
+                            <Icons.Receipt />
+                          </div>
+                          <div className="transaction-item__info">
+                            <span className="transaction-item__firm">{t.Firm?.FirmName || 'Unknown'}</span>
+                            <span className="transaction-item__details">
+                              {t.Vehicle?.VehicleNo || '-'} • {Number(t.TotalTon || 0).toFixed(2)} T
+                            </span>
+                          </div>
+                          <div className="transaction-item__amount">
+                            <span className="transaction-item__price">₹{Number(t.TotalPrice || 0).toLocaleString('en-IN')}</span>
+                            <span className="transaction-item__date">{formatDate(t.TransactionDate)}</span>
+                          </div>
                         </div>
-                        <div className="transaction-item__info">
-                          <span className="transaction-item__firm">{t.Firm?.FirmName || 'Unknown'}</span>
-                          <span className="transaction-item__details">
-                            {t.Vehicle?.VehicleNo || '-'} • {Number(t.TotalTon || 0).toFixed(2)} T
-                          </span>
-                        </div>
-                        <div className="transaction-item__amount">
-                          <span className="transaction-item__price">₹{Number(t.TotalPrice || 0).toLocaleString('en-IN')}</span>
-                          <span className="transaction-item__date">{formatDate(t.TransactionDate)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="dashboard-pagination">
-                      <button
-                        className="dashboard-pagination__btn"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M15 18l-6-6 6-6" />
-                        </svg>
-                      </button>
-                      
-                      <div className="dashboard-pagination__pages">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                          <button
-                            key={page}
-                            className={`dashboard-pagination__page ${currentPage === page ? 'dashboard-pagination__page--active' : ''}`}
-                            onClick={() => handlePageChange(page)}
-                          >
-                            {page}
-                          </button>
-                        ))}
-                      </div>
-                      
-                      <button
-                        className="dashboard-pagination__btn"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 18l6-6-6-6" />
-                        </svg>
-                      </button>
-                      
-                      <span className="dashboard-pagination__info">
-                        Page {currentPage} of {totalPages}
-                      </span>
+                      ))}
                     </div>
-                  )}
-                </>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="dashboard-pagination">
+                        <button
+                          className="dashboard-pagination__btn"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M15 18l-6-6 6-6" />
+                          </svg>
+                        </button>
+
+                        <div className="dashboard-pagination__pages">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <button
+                              key={page}
+                              className={`dashboard-pagination__page ${currentPage === page ? 'dashboard-pagination__page--active' : ''}`}
+                              onClick={() => handlePageChange(page)}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          className="dashboard-pagination__btn"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M9 18l6-6-6-6" />
+                          </svg>
+                        </button>
+
+                        <span className="dashboard-pagination__info">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="dashboard-empty">
                     <Icons.Receipt />
@@ -592,6 +602,13 @@ function DashboardNew() {
                       <Icons.Payment />
                     </div>
                     <span className="quick-action__label">Set Pricing</span>
+                  </button>
+
+                  <button className="quick-action" onClick={() => navigate('/notes', { state: { openCreate: true } })}>
+                    <div className="quick-action__icon quick-action__icon--neutral">
+                      <Icons.Note />
+                    </div>
+                    <span className="quick-action__label">Create Note</span>
                   </button>
                 </div>
               </div>

@@ -21,13 +21,13 @@ import { getFromCache, saveToCache, invalidateCache, invalidateCachePattern } fr
 export async function cachedApiCall(endpoint, options = {}, cacheOptions = {}) {
   const method = options.method || 'GET';
   const isReadRequest = method === 'GET';
-  
+
   // Cache options
   const {
     useCache = isReadRequest, // Only cache GET requests by default
     forceRefresh = false,      // Force fresh data
   } = cacheOptions;
-  
+
   // Try to get from cache if it's a cacheable request
   if (useCache && !forceRefresh) {
     const cachedData = getFromCache(endpoint, options);
@@ -36,10 +36,10 @@ export async function cachedApiCall(endpoint, options = {}, cacheOptions = {}) {
       return createMockResponse(cachedData);
     }
   }
-  
+
   // Make actual API call
   const response = await apiCall(endpoint, options);
-  
+
   // Cache successful GET responses
   if (useCache && response.ok && isReadRequest) {
     try {
@@ -51,12 +51,12 @@ export async function cachedApiCall(endpoint, options = {}, cacheOptions = {}) {
       console.warn('[Cached API] Failed to cache response:', error);
     }
   }
-  
+
   // For write operations (POST, PUT, DELETE), invalidate related caches
   if (!isReadRequest && response.ok) {
     invalidateRelatedCaches(endpoint, method);
   }
-  
+
   return response;
 }
 
@@ -71,7 +71,7 @@ function createMockResponse(data) {
     headers: new Headers(),
     json: async () => data,
     text: async () => JSON.stringify(data),
-    clone: function() { return this; },
+    clone: function () { return this; },
     _fromCache: true, // Mark as cached response
   };
 }
@@ -81,38 +81,38 @@ function createMockResponse(data) {
  */
 function invalidateRelatedCaches(endpoint, method) {
   console.log(`[Cache Invalidation] ${method} ${endpoint}`);
-  
+
   // Extract resource type from endpoint
   // Example: /api/vehicle/123 -> vehicle
-  const resourceMatch = endpoint.match(/\/api\/([^\/]+)/);
+  const resourceMatch = endpoint.match(/(?:\/api)?\/([^\/]+)/);
   if (!resourceMatch) return;
-  
+
   const resource = resourceMatch[1];
-  
+
   // Invalidate caches based on the resource
   switch (resource) {
     case 'firm':
-      invalidateCachePattern('/api/firm');
-      invalidateCachePattern('/api/vehicle'); // Vehicles depend on firms
-      invalidateCachePattern('/api/pricing'); // Pricing depends on firms
-      invalidateCachePattern('/api/dashboard'); // Dashboard shows firms
+      invalidateCachePattern('/firm');
+      invalidateCachePattern('/vehicle'); // Vehicles depend on firms
+      invalidateCachePattern('/pricing'); // Pricing depends on firms
+      invalidateCachePattern('/dashboard'); // Dashboard shows firms
       break;
-      
+
     case 'vehicle':
-      invalidateCachePattern('/api/vehicle');
-      invalidateCachePattern('/api/dashboard'); // Dashboard shows vehicles
+      invalidateCachePattern('/vehicle');
+      invalidateCachePattern('/dashboard'); // Dashboard shows vehicles
       break;
-      
+
     case 'pricing':
-      invalidateCachePattern('/api/pricing');
-      invalidateCachePattern('/api/dashboard'); // Dashboard may show pricing
+      invalidateCachePattern('/pricing');
+      invalidateCachePattern('/dashboard'); // Dashboard may show pricing
       break;
-      
+
     case 'transaction':
-      invalidateCachePattern('/api/transaction');
-      invalidateCachePattern('/api/dashboard'); // Dashboard shows transactions
+      invalidateCachePattern('/transaction');
+      invalidateCachePattern('/dashboard'); // Dashboard shows transactions
       break;
-      
+
     default:
       // Invalidate the specific endpoint cache
       invalidateCache(endpoint, { method: 'GET' });
@@ -136,10 +136,10 @@ export async function prefetchData(endpoint, options = {}) {
  * Batch prefetch multiple endpoints
  */
 export async function prefetchBatch(endpoints) {
-  const promises = endpoints.map(({ endpoint, options }) => 
+  const promises = endpoints.map(({ endpoint, options }) =>
     prefetchData(endpoint, options)
   );
-  
+
   try {
     await Promise.all(promises);
     console.log(`[Prefetch] Batch completed: ${endpoints.length} endpoints`);

@@ -33,6 +33,7 @@ import {
   ReceiptIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
+  NoteIcon,
 } from '../../design-system/icons';
 
 // Styles
@@ -54,6 +55,7 @@ const navigationRoutes = [
     items: [
       { key: 'pricing', name: 'Pricing', route: '/pricing', icon: <PaymentIcon size={18} /> },
       { key: 'transactions', name: 'Transactions', route: '/transactions', icon: <ReceiptIcon size={18} /> },
+      { key: 'notes', name: 'Notes', route: '/notes', icon: <NoteIcon size={18} /> },
     ],
   },
 ];
@@ -131,7 +133,7 @@ function PriceEdit() {
         ? `/pricing/${formData.firmId}`
         : `/pricing/${formData.firmId}`;
 
-      const response = await apiCall(endpoint, {
+      const response = await cachedApiCall(endpoint, {
         method: existingPrice ? 'PUT' : 'POST',
         body: JSON.stringify({
           RoTonPrice: parseFloat(formData.roTonPrice),
@@ -157,7 +159,7 @@ function PriceEdit() {
   const selectedFirm = firms.find(f => f.id.toString() === formData.firmId);
 
   // Calculate example
-  const exampleTon = 10;
+  const exampleTon = 1;
   const roPrice = parseFloat(formData.roTonPrice) || 0;
   const openPrice = parseFloat(formData.openTonPrice) || 0;
   const exampleRoTotal = exampleTon * roPrice;
@@ -330,7 +332,7 @@ function PriceEdit() {
             <div className="price-edit-preview">
               <div className="price-preview-card">
                 <h4 className="price-preview-card__title">Pricing Preview</h4>
-                <p className="price-preview-card__subtitle">Example calculation for {exampleTon} tons</p>
+                <p className="price-preview-card__subtitle">Example calculation for {exampleTon} ton</p>
 
                 <div className="price-preview-card__rates">
                   <div className="price-preview-rate">
